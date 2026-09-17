@@ -687,19 +687,12 @@
 
         <!-- ABA 3: MODELOS -->
         <section id="tab-modelos" class="tab-content">
-          <div id="modelos-container" class="dashboard-grid">
-            <!-- Renderizado dinamicamente via JavaScript -->
-          </div>
+          <div id="modelos-container" class="dashboard-grid"></div>
         </section>
 
         <!-- ABA 4: SINTOMAS -->
         <section id="tab-sintomas" class="tab-content">
-          <div class="dashboard-grid">
-            <div class="card col-12">
-              <div class="card-title">Top 5 Sintomas Recorrentes (Volume e %)</div>
-              <div class="chart-container" style="min-height: 380px;"><canvas id="chartSintomas"></canvas></div>
-            </div>
-          </div>
+          <div id="sintomas-container" class="dashboard-grid"></div>
         </section>
 
         <!-- ABA 5: DESLIGAMENTOS -->
@@ -791,8 +784,8 @@
 
     let parsedData = {
       chamados: [],
-      modelosPorMes: {}, // { "JANEIRO": [{ nome, valor, perc }], ... }
-      sintomas: [],
+      modelosPorMes: {},  // { "JANEIRO": [{ nome, valor, perc }], ... }
+      sintomasPorMes: {}, // { "JANEIRO": [{ nome, valor, perc }], ... }
       desligamentos: [],
       trocas: [],
       custos: [],
@@ -845,14 +838,13 @@
       return Math.round(n);
     }
 
-    // EXTRAI NOME, VALOR E PORCENTAGEM DE CÉLULAS COMBO (Ex: "S9 - 41 (22%)")
+    // EXTRAI NOME, VALOR E PORCENTAGEM DE CÉLULAS COMBO (Ex: "Pneus - 47 (26%)" ou "S9 - 41 (22%)")
     function parseComboCell(cellValue) {
       if (!cellValue) return null;
       const str = String(cellValue).trim();
-      if (!str || str.toUpperCase().includes("TOTAL")) return null;
+      if (!str || str.toUpperCase().includes("TOP 5") || str.toUpperCase().includes("POSIÇÃO")) return null;
 
-      // Regex para separar: Nome - Valor (Porcentagem%)
-      // Ex: "S9 - 41 (22%)" -> Nome: S9, Valor: 41, Perc: 22
+      // Regex para extração inteligente: Nome - Valor (Porcentagem%)
       const match = str.match(/^(.+?)\s*[\-\–]\s*(\d+)\s*\((.*?)\%?\)$/);
 
       if (match) {
@@ -862,7 +854,6 @@
           perc: match[3].trim()
         };
       } else {
-        // Fallback para nomes simples
         return {
           nome: str,
           valor: 0,
@@ -929,7 +920,7 @@
 
     // PROCESSAMENTO DA PLANILHA EXCEL
     function processExcel(workbook) {
-      parsedData = { chamados: [], modelosPorMes: {}, sintomas: [], desligamentos: [], trocas: [], custos: [], listaMeses: [] };
+      parsedData = { chamados: [], modelosPorMes: {}, sintomasPorMes: {}, desligamentos: [], trocas: [], custos: [], listaMeses: [] };
       const mesesValidosSet = new Set();
 
       // 1. ABA CHAMADOS (Define os Meses Mestres)
@@ -963,19 +954,32 @@
         const rows = XLSX.utils.sheet_to_json(sheet, { header: 1, defval: "" });
         if (rows.length <= 1) return;
 
-        // ABA MODELOS (Estrutura da Imagem)
+        // ABA MODELOS
         if (name.includes("MODELO")) {
           const header = rows[0].map(h => String(h || '').trim());
-          
-          // Mapear cada coluna de mês
           header.forEach((nomeMes, colIdx) => {
-            if (colIdx > 0 && nomeMes && !nomeMes.toUpperCase().includes("RANKING")) {
+            if (colIdx > 0 && nomeMes && !nomeMes.toUpperCase().includes("RANKING") && !nomeMes.toUpperCase().includes("TOP")) {
               const modelosDoMes = [];
               for (let i = 1; i < rows.length; i++) {
                 const combo = parseComboCell(rows[i][colIdx]);
                 if (combo) modelosDoMes.push(combo);
               }
               parsedData.modelosPorMes[nomeMes] = modelosDoMes;
+            }
+          });
+        }
+
+        // ABA SINTOMAS
+        else if (name.includes("SINTOMA")) {
+          const header = rows[0].map(h => String(h || '').trim());
+          header.forEach((nomeMes, colIdx) => {
+            if (colIdx > 0 && nomeMes && !nomeMes.toUpperCase().includes("RANKING") && !nomeMes.toUpperCase().includes("TOP")) {
+              const sintomasDoMes = [];
+              for (let i = 1; i < rows.length; i++) {
+                const combo = parseComboCell(rows[i][colIdx]);
+                if (combo) sintomasDoMes.push(combo);
+              }
+              parsedData.sintomasPorMes[nomeMes] = sintomasDoMes;
             }
           });
         }
@@ -1186,7 +1190,7 @@
       });
     }
 
-    /* ---------------- ABA 3: MODELOS (EXTRAÇÃO DA NOVA ESTRUTURA) ---------------- */
+    /* ---------------- ABA 3: MODELOS ---------------- */
     function renderModelos() {
       const container = document.getElementById('modelos-container');
       container.innerHTML = '';
@@ -1305,40 +1309,123 @@
       }
     }
 
-    /* ---------------- ABA 4: SINTOMAS ---------------- */
+    /* ---------------- ABA 4: SINTOMAS (MESMO ESTILO DE MODELOS) ---------------- */
     function renderSintomas() {
-      const sintomasList = parsedData.sintomas.map(s => {
-        let val = 0;
-        if (periodoSelecionado === 'TODOS') {
-          val = Object.values(s.meses).reduce((a,c)=>a+c, 0);
-        } else {
-          val = s.meses[periodoSelecionado] || 0;
-        }
-        return { sintoma: s.sintoma, valor: val };
-      }).sort((a,b)=>b.valor-a.valor).slice(0, 5);
+      const container = document.getElementById('sintomas-container');
+      container.innerHTML = '';
 
-      const totalTop = sintomasList.reduce((a,c)=>a+c.valor, 0);
-      const labels = sintomasList.map(s => s.sintoma);
-      const values = sintomasList.map(s => s.valor);
+      if (periodoSelecionado === 'TODOS') {
+        // --- 1. GRÁFICO TOTAL ACUMULADO SINTOMAS ---
+        const acumuladoMap = {};
+        Object.keys(parsedData.sintomasPorMes).forEach(mes => {
+          parsedData.sintomasPorMes[mes].forEach(item => {
+            acumuladoMap[item.nome] = (acumuladoMap[item.nome] || 0) + item.valor;
+          });
+        });
 
-      createChart('chartSintomas', {
-        type: 'bar',
-        data: {
-          labels: labels,
-          datasets: [{ data: values, backgroundColor: palette, borderRadius: 15 }]
-        },
-        options: {
-          plugins: {
-            datalabels: {
-              formatter: (v) => {
-                const p = totalTop ? Math.round((v/totalTop)*100) : 0;
-                return `${v} (${p}%)`;
-              },
-              color: '#fff', font: { weight: 'bold' }
+        const sortedAcumulado = Object.entries(acumuladoMap)
+          .map(([nome, valor]) => ({ nome, valor }))
+          .sort((a,b) => b.valor - a.valor);
+
+        container.innerHTML += `
+          <div class="card col-12">
+            <div class="card-title" style="font-size:0.85rem; letter-spacing:0.5px; text-transform:uppercase; color:var(--text-muted);">
+              TOTAL DE CHAMADOS POR SINTOMA (ACUMULADO)
+            </div>
+            <div class="chart-container" style="min-height: 280px;">
+              <canvas id="chartSintomasAcumulado"></canvas>
+            </div>
+          </div>
+        `;
+
+        setTimeout(() => {
+          createChart('chartSintomasAcumulado', {
+            type: 'bar',
+            data: {
+              labels: sortedAcumulado.map(s => s.nome),
+              datasets: [{ data: sortedAcumulado.map(s => s.valor), backgroundColor: palette, borderRadius: 20 }]
+            },
+            options: {
+              plugins: {
+                datalabels: {
+                  anchor: 'end', align: 'end',
+                  formatter: (v) => v,
+                  color: 'var(--text-main)', font: { weight: 'bold', size: 12 }
+                }
+              }
             }
-          }
-        }
-      });
+          });
+        }, 50);
+
+        // --- 2. GRÁFICOS MÊS A MÊS SINTOMAS ---
+        Object.keys(parsedData.sintomasPorMes).forEach((mes, idx) => {
+          const chartId = `chartSintomaMes_${idx}`;
+          container.innerHTML += `
+            <div class="card col-12">
+              <div class="card-title" style="font-size:0.9rem; font-weight:700;">
+                ${mes} — Top 5 Sintomas
+              </div>
+              <div class="chart-container" style="min-height: 240px;">
+                <canvas id="${chartId}"></canvas>
+              </div>
+            </div>
+          `;
+
+          setTimeout(() => {
+            const listMes = parsedData.sintomasPorMes[mes] || [];
+            createChart(chartId, {
+              type: 'bar',
+              data: {
+                labels: listMes.map(l => l.nome),
+                datasets: [{ data: listMes.map(l => l.valor), backgroundColor: palette, borderRadius: 20 }]
+              },
+              options: {
+                plugins: {
+                  datalabels: {
+                    anchor: 'end', align: 'end',
+                    formatter: (v, ctx) => `${v}\n(${listMes[ctx.dataIndex].perc}%)`,
+                    color: 'var(--text-main)', font: { weight: 'bold', size: 11 }, textAlign: 'center'
+                  }
+                }
+              }
+            });
+          }, 50);
+        });
+
+      } else {
+        // --- APENAS O MÊS SELECIONADO ---
+        const chartId = `chartSintomaMes_Unico`;
+        container.innerHTML = `
+          <div class="card col-12">
+            <div class="card-title" style="font-size:0.95rem; font-weight:700;">
+              ${periodoSelecionado} — Top 5 Sintomas Recorrentes
+            </div>
+            <div class="chart-container" style="min-height: 350px;">
+              <canvas id="${chartId}"></canvas>
+            </div>
+          </div>
+        `;
+
+        setTimeout(() => {
+          const listMes = parsedData.sintomasPorMes[periodoSelecionado] || [];
+          createChart(chartId, {
+            type: 'bar',
+            data: {
+              labels: listMes.map(l => l.nome),
+              datasets: [{ data: listMes.map(l => l.valor), backgroundColor: palette, borderRadius: 20 }]
+            },
+            options: {
+              plugins: {
+                datalabels: {
+                  anchor: 'end', align: 'end',
+                  formatter: (v, ctx) => `${v} (${listMes[ctx.dataIndex].perc}%)`,
+                  color: 'var(--text-main)', font: { weight: 'bold', size: 12 }
+                }
+              }
+            }
+          });
+        }, 50);
+      }
     }
 
     /* ---------------- ABA 5: DESLIGAMENTOS ---------------- */
