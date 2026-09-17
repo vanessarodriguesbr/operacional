@@ -45,7 +45,7 @@
       --transition-speed: 0.25s;
     }
 
-    /* Modo Escuro (Alto Contraste Aprimorado) */
+    /* Modo Escuro (Alto Contraste) */
     body.dark-mode {
       --bg-primary: #121214;
       --bg-secondary: #1e1e24;
@@ -395,7 +395,7 @@
       min-height: 280px;
     }
 
-    /* Empty State (Estado Inicial Zerado) */
+    /* Empty State */
     .empty-state {
       display: flex;
       flex-direction: column;
@@ -429,7 +429,7 @@
       margin-bottom: 20px;
     }
 
-    /* KPI Box Small */
+    /* KPI Box */
     .kpi-card {
       padding: 16px;
       border-radius: 10px;
@@ -448,7 +448,7 @@
     }
 
     .kpi-value {
-      font-size: 1.4rem;
+      font-size: 1.3rem;
       font-weight: 700;
       color: var(--text-main);
     }
@@ -484,7 +484,6 @@
       background-color: var(--bg-primary);
     }
 
-    /* Badges de Desempenho */
     .badge {
       display: inline-flex;
       align-items: center;
@@ -498,8 +497,6 @@
 
     .badge-success { background-color: var(--green-pastel); color: var(--green-text); }
     .badge-danger  { background-color: var(--red-pastel); color: var(--red-text); }
-    .badge-info    { background-color: var(--blue-pastel); color: var(--blue-text); }
-    .badge-warning { background-color: var(--yellow-pastel); color: var(--yellow-text); }
 
     .performance-list {
       list-style: none;
@@ -516,7 +513,6 @@
       line-height: 1.4;
     }
 
-    /* Pontos de Atenção & Diagnóstico */
     .risk-card {
       border-left: 4px solid var(--purple-primary);
       padding: 15px;
@@ -528,7 +524,6 @@
     .risk-card.high { border-left-color: #dc3545; }
     .risk-card.medium { border-left-color: #ffc107; }
 
-    /* Responsividade */
     @media (max-width: 992px) {
       .col-6, .col-4, .col-3 { grid-column: span 12; }
       .sidebar { width: 80px; }
@@ -571,7 +566,7 @@
           <a href="#"><i class="fa-solid fa-arrows-rotate"></i><span class="menu-text">Trocas de Equip.</span></a>
         </li>
         <li data-tab="custos">
-          <a href="#"><i class="fa-solid fa-coins"></i><span class="menu-text">Custos Operacionais</span></a>
+          <a href="#"><i class="fa-solid fa-coins"></i><span class="menu-text">Centro de Custos</span></a>
         </li>
         <li data-tab="atencao">
           <a href="#"><i class="fa-solid fa-shield-halved"></i><span class="menu-text">Pontos de Atenção</span></a>
@@ -600,7 +595,6 @@
 
   <!-- Principal -->
   <div class="main-wrapper">
-    <!-- Topbar Header -->
     <header class="topbar">
       <div class="topbar-title">
         <h1>RELATÓRIO OPERACIONAL CONSOLIDADO</h1>
@@ -620,16 +614,15 @@
       </div>
     </header>
 
-    <!-- Conteúdo das Abas -->
     <main class="content-area">
 
-      <!-- ESTADO INICIAL ZERADO (Quando não houver dados) -->
+      <!-- Estado Inicial Vazio -->
       <div id="global-empty-state" class="empty-state">
         <i class="fa-solid fa-cloud-arrow-up"></i>
         <h3>Nenhum Dado Carregado</h3>
-        <p>Para visualizar as métricas, gráficos e análises interativas, por favor carregue seu arquivo Excel (.xlsx) contendo as abas necessárias.</p>
+        <p>Por favor, carregue sua planilha Excel (.xlsx) contendo as abas de dados para atualizar o relatório em tempo real.</p>
         <button class="btn-upload" onclick="document.getElementById('file-input').click()">
-          <i class="fa-solid fa-file-excel"></i> Selecionar Planilha Agora
+          <i class="fa-solid fa-file-excel"></i> Selecionar Planilha Excel
         </button>
       </div>
 
@@ -682,11 +675,11 @@
               <div class="chart-container"><canvas id="chartChamadosTotal"></canvas></div>
             </div>
             <div class="card col-4">
-              <div class="card-title">Chamados Atendidos (Qtd e %)</div>
+              <div class="card-title">Atendidos (Quantidade e %)</div>
               <div class="chart-container"><canvas id="chartChamadosAtendidos"></canvas></div>
             </div>
             <div class="card col-4">
-              <div class="card-title">SLA Cumprido (Qtd e %)</div>
+              <div class="card-title">SLA Cumprido (Quantidade e %)</div>
               <div class="chart-container"><canvas id="chartChamadosSla"></canvas></div>
             </div>
           </div>
@@ -696,7 +689,7 @@
         <section id="tab-modelos" class="tab-content">
           <div class="dashboard-grid">
             <div class="card col-12">
-              <div class="card-title">Top 5 Modelos Recorrentes (Volume e Porcentagem)</div>
+              <div class="card-title">Top 5 Modelos Recorrentes (Volume e %)</div>
               <div class="chart-container" style="min-height: 380px;"><canvas id="chartModelos"></canvas></div>
             </div>
           </div>
@@ -706,7 +699,7 @@
         <section id="tab-sintomas" class="tab-content">
           <div class="dashboard-grid">
             <div class="card col-12">
-              <div class="card-title">Top 5 Sintomas Recorrentes (Volume e Porcentagem)</div>
+              <div class="card-title">Top 5 Sintomas Recorrentes (Volume e %)</div>
               <div class="chart-container" style="min-height: 380px;"><canvas id="chartSintomas"></canvas></div>
             </div>
           </div>
@@ -716,29 +709,29 @@
         <section id="tab-desligamentos" class="tab-content">
           <div class="dashboard-grid">
             <div class="card col-12">
-              <div class="card-title">Quantidade de Desligamentos por Mês</div>
+              <div class="card-title">Quantidade de Desligamentos Mês a Mês</div>
               <div class="chart-container" style="min-height: 350px;"><canvas id="chartDesligamentos"></canvas></div>
             </div>
           </div>
         </section>
 
-        <!-- ABA 6: TROCAS -->
+        <!-- ABA 6: TROCAS DE EQUIPAMENTOS -->
         <section id="tab-trocas" class="tab-content">
           <div class="dashboard-grid">
             <div class="card col-12">
-              <div class="card-title">Quantidade de Trocas de Equipamentos por Mês</div>
+              <div class="card-title">Quantidade de Trocas de Equipamentos Mês a Mês</div>
               <div class="chart-container" style="min-height: 350px;"><canvas id="chartTrocas"></canvas></div>
             </div>
           </div>
         </section>
 
-        <!-- ABA 7: CUSTOS OPERACIONAIS -->
+        <!-- ABA 7: CENTRO DE CUSTOS -->
         <section id="tab-custos" class="tab-content">
           <div class="dashboard-grid" id="custos-kpis" style="display:none;">
             <div class="col-3"><div class="kpi-card"><span class="kpi-title">Faturamento</span><span class="kpi-value" id="kpi-fat">R$ 0</span></div></div>
             <div class="col-3"><div class="kpi-card"><span class="kpi-title">Descontos</span><span class="kpi-value" id="kpi-desc">R$ 0</span></div></div>
-            <div class="col-3"><div class="kpi-card"><span class="kpi-title">Gastos Transportadoras</span><span class="kpi-value" id="kpi-transp">R$ 0</span></div></div>
-            <div class="col-3"><div class="kpi-card"><span class="kpi-title">Gastos com AT</span><span class="kpi-value" id="kpi-at">R$ 0</span></div></div>
+            <div class="col-3"><div class="kpi-card"><span class="kpi-title">Gastos Transportadora Real</span><span class="kpi-value" id="kpi-transp">R$ 0</span></div></div>
+            <div class="col-3"><div class="kpi-card"><span class="kpi-title">Gastos ATs</span><span class="kpi-value" id="kpi-at">R$ 0</span></div></div>
           </div>
 
           <div class="dashboard-grid" id="custos-charts-container">
@@ -747,27 +740,32 @@
               <div class="chart-container"><canvas id="chartCustosDesc"></canvas></div>
             </div>
             <div class="card col-4">
-              <div class="card-title">Gastos Transportadoras</div>
+              <div class="card-title">Gastos Transportadora Real</div>
               <div class="chart-container"><canvas id="chartCustosTransp"></canvas></div>
             </div>
             <div class="card col-4">
-              <div class="card-title">Gastos com AT</div>
+              <div class="card-title">Gastos ATs</div>
               <div class="chart-container"><canvas id="chartCustosAt"></canvas></div>
             </div>
           </div>
 
           <div class="dashboard-grid">
             <div class="card col-12">
-              <div class="card-title">Detalhamento dos Custos Operacionais</div>
+              <div class="card-title">Tabela de Custos Operacionais</div>
               <div class="table-responsive">
                 <table class="custom-table">
                   <thead>
                     <tr>
-                      <th>Período / Mês</th>
+                      <th>Mês</th>
+                      <th>Chamados</th>
                       <th>Faturamento</th>
-                      <th>Descontos</th>
-                      <th>Gastos Transportadoras</th>
-                      <th>Gastos AT</th>
+                      <th>Desconto</th>
+                      <th>% Desc.</th>
+                      <th>Transp. Bruto</th>
+                      <th>Reembolso Transp.</th>
+                      <th>Transp. Real</th>
+                      <th>Gasto ATs</th>
+                      <th>% Gasto ATs</th>
                     </tr>
                   </thead>
                   <tbody id="custos-table-body"></tbody>
@@ -781,7 +779,7 @@
         <section id="tab-atencao" class="tab-content">
           <div class="dashboard-grid">
             <div class="card col-12">
-              <div class="card-title"><i class="fa-solid fa-triangle-exclamation"></i> Matriz de Risco & Análise Automática de Oscilações</div>
+              <div class="card-title"><i class="fa-solid fa-triangle-exclamation"></i> Análise de Oscilações e Matriz de Risco</div>
               <div id="matriz-risco-container"></div>
             </div>
           </div>
@@ -791,37 +789,52 @@
     </main>
   </div>
 
-  <!-- SCRIPT DE LÓGICA E INTERATIVIDADE -->
   <script>
-    // Registro do Plugin ChartDataLabels
     Chart.register(ChartDataLabels);
 
-    // Estado Global dos Dados
-    let rawData = {
-      CHAMADOS: [],
-      MODELOS: [],
-      SINTOMAS: [],
-      DESLIGAMENTOS: [],
-      TROCAS: [],
-      CUSTOS: []
+    // Estruturas Processadas
+    let parsedData = {
+      chamados: [],       // { mes, chamados, atendidos, percAtendidos, atendidosSla, percAtendidosSla }
+      modelos: [],        // { modelo, meses: { "JANEIRO": valor, ... } }
+      sintomas: [],       // { sintoma, meses: { "JANEIRO": valor, ... } }
+      desligamentos: [],  // { mes, quantidade, porcentagem }
+      trocas: [],         // { mes, quantidade, porcentagem }
+      custos: [],         // { mes, chamados, faturamento, desconto, percDesconto, transpBruto, reembolsoTransp, transpReal, gastoAts, percGastoAts }
+      listaMeses: []      // Lista ordenada de meses encontrados
     };
 
-    let periodosDisponiveis = [];
     let periodoSelecionado = 'TODOS';
     let chartInstances = {};
 
-    // Configuração Inicial de Cores
     const colors = {
       purpleDark: '#4b0082',
       purpleMedium: '#6a1b9a',
       purpleLight: '#8e24aa',
       purplePastel: '#ab47bc',
-      purpleSoft: '#ce93d8',
-      purpleUltraLight: '#f0e6ff',
-      grayBar: '#e0e0e0'
+      purpleSoft: '#ce93d8'
     };
 
-    // Alternância de Tema (Claro / Escuro)
+    // Função de limpeza e conversão numérica flexível
+    function parseNumber(val) {
+      if (val === undefined || val === null || val === '') return 0;
+      if (typeof val === 'number') return val;
+      
+      let str = String(val).trim();
+      // Remove R$, %, espaços
+      str = str.replace(/R\$/g, '').replace(/%/g, '').trim();
+      
+      // Se tiver vírgula como decimal (padrão BR)
+      if (str.includes(',') && str.includes('.')) {
+        str = str.replace(/\./g, '').replace(',', '.');
+      } else if (str.includes(',')) {
+        str = str.replace(',', '.');
+      }
+      
+      const num = parseFloat(str);
+      return isNaN(num) ? 0 : num;
+    }
+
+    // Alternar Tema
     const themeBtn = document.getElementById('theme-btn');
     const themeIcon = document.getElementById('theme-icon');
     
@@ -831,8 +844,6 @@
       themeIcon.className = isDark ? 'fa-solid fa-toggle-on' : 'fa-solid fa-toggle-off';
       themeBtn.querySelector('span').innerHTML = isDark ? 
         '<i class="fa-solid fa-sun"></i> Modo Claro' : '<i class="fa-solid fa-moon"></i> Modo Escuro';
-      
-      // Atualizar Gráficos para adaptar ao tema
       updateAllDashboards();
     });
 
@@ -849,7 +860,7 @@
       });
     });
 
-    // Upload de Arquivo Excel (.xlsx / .csv)
+    // Upload
     const fileInput = document.getElementById('file-input');
     document.getElementById('upload-trigger').addEventListener('click', () => fileInput.click());
 
@@ -863,65 +874,173 @@
           const data = new Uint8Array(evt.target.result);
           const workbook = XLSX.read(data, { type: 'array' });
           
-          processWorkbook(workbook);
+          processExcel(workbook);
 
-          // Atualiza carimbo de data/hora
           const now = new Date();
           document.getElementById('update-time').innerText = `Atualizado: ${now.toLocaleDateString()} ${now.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}`;
           
-          // Exibe Dashboard e Oculta Empty State
           document.getElementById('global-empty-state').style.display = 'none';
           document.getElementById('dashboard-content').style.display = 'block';
 
         } catch (error) {
-          alert("Erro ao processar planilha. Verifique se o arquivo segue o formato correto com as abas solicitadas.");
+          alert("Erro ao ler o arquivo Excel. Verifique a estrutura das abas e tente novamente.");
           console.error(error);
         }
       };
       reader.readAsArrayBuffer(file);
     });
 
-    // Processar Conteúdo da Planilha
-    function processWorkbook(workbook) {
+    // PROCESSAMENTO E MAPEAMENTO DAS COLUNAS EXATAS
+    function processExcel(workbook) {
       // Resetar dados
-      rawData = { CHAMADOS: [], MODELOS: [], SINTOMAS: [], DESLIGAMENTOS: [], TROCAS: [], CUSTOS: [] };
-      
-      workbook.SheetNames.forEach(sheetName => {
-        const cleanName = sheetName.trim().toUpperCase();
-        const sheet = workbook.Sheets[sheetName];
-        const json = XLSX.utils.sheet_to_json(sheet, { defval: "" });
+      parsedData = { chamados: [], modelos: [], sintomas: [], desligamentos: [], trocas: [], custos: [], listaMeses: [] };
+      const mesesSet = new Set();
 
-        if (cleanName.includes("CHAMADO")) rawData.CHAMADOS = json;
-        else if (cleanName.includes("MODELO")) rawData.MODELOS = json;
-        else if (cleanName.includes("SINTOMA")) rawData.SINTOMAS = json;
-        else if (cleanName.includes("DESLIGAMENTO")) rawData.DESLIGAMENTOS = json;
-        else if (cleanName.includes("TROCA")) rawData.TROCAS = json;
-        else if (cleanName.includes("CUSTO") || cleanName.includes("CENTRO")) rawData.CUSTOS = json;
+      workbook.SheetNames.forEach(sheetName => {
+        const name = sheetName.trim().toUpperCase();
+        const sheet = workbook.Sheets[sheetName];
+        // Converte a aba em matriz (linha por linha, coluna por coluna)
+        const rows = XLSX.utils.sheet_to_json(sheet, { header: 1, defval: "" });
+        if (rows.length <= 1) return; // pular se estiver vazia
+
+        // 1. ABA CHAMADOS
+        if (name.includes("CHAMADO")) {
+          for (let i = 1; i < rows.length; i++) {
+            const r = rows[i];
+            const mes = String(r[0] || '').trim();
+            if (!mes) continue;
+            mesesSet.add(mes);
+
+            parsedData.chamados.push({
+              mes: mes,
+              chamados: parseNumber(r[1]),
+              atendidos: parseNumber(r[2]),
+              percAtendidos: parseNumber(r[3]),
+              atendidosSla: parseNumber(r[4]),
+              percAtendidosSla: parseNumber(r[5])
+            });
+          }
+        }
+
+        // 2. ABA MODELOS (Matricial)
+        else if (name.includes("MODELO")) {
+          const header = rows[0];
+          // As colunas de B em diante são os meses
+          const mesesColunas = [];
+          for (let c = 1; c < header.length; c++) {
+            const nomeMes = String(header[c] || `Mês ${c}`).trim();
+            if (nomeMes) {
+              mesesColunas.push({ colIndex: c, nomeMes: nomeMes });
+              mesesSet.add(nomeMes);
+            }
+          }
+
+          for (let i = 1; i < rows.length; i++) {
+            const r = rows[i];
+            const modelo = String(r[0] || '').trim();
+            if (!modelo) continue;
+
+            const mesesValores = {};
+            mesesColunas.forEach(mc => {
+              mesesValores[mc.nomeMes] = parseNumber(r[mc.colIndex]);
+            });
+
+            parsedData.modelos.push({ modelo: modelo, meses: mesesValores });
+          }
+        }
+
+        // 3. ABA SINTOMAS (Matricial)
+        else if (name.includes("SINTOMA")) {
+          const header = rows[0];
+          const mesesColunas = [];
+          for (let c = 1; c < header.length; c++) {
+            const nomeMes = String(header[c] || `Mês ${c}`).trim();
+            if (nomeMes) {
+              mesesColunas.push({ colIndex: c, nomeMes: nomeMes });
+              mesesSet.add(nomeMes);
+            }
+          }
+
+          for (let i = 1; i < rows.length; i++) {
+            const r = rows[i];
+            const sintoma = String(r[0] || '').trim();
+            if (!sintoma) continue;
+
+            const mesesValores = {};
+            mesesColunas.forEach(mc => {
+              mesesValores[mc.nomeMes] = parseNumber(r[mc.colIndex]);
+            });
+
+            parsedData.sintomas.push({ sintoma: sintoma, meses: mesesValores });
+          }
+        }
+
+        // 4. ABA DESLIGAMENTOS
+        else if (name.includes("DESLIGAMENTO")) {
+          for (let i = 1; i < rows.length; i++) {
+            const r = rows[i];
+            const mes = String(r[0] || '').trim();
+            if (!mes) continue;
+            mesesSet.add(mes);
+
+            parsedData.desligamentos.push({
+              mes: mes,
+              quantidade: parseNumber(r[1]),
+              porcentagem: parseNumber(r[2])
+            });
+          }
+        }
+
+        // 5. ABA TROCAS DE EQUIPAMENTOS
+        else if (name.includes("TROCA")) {
+          for (let i = 1; i < rows.length; i++) {
+            const r = rows[i];
+            const mes = String(r[0] || '').trim();
+            if (!mes) continue;
+            mesesSet.add(mes);
+
+            parsedData.trocas.push({
+              mes: mes,
+              quantidade: parseNumber(r[1]),
+              porcentagem: parseNumber(r[2])
+            });
+          }
+        }
+
+        // 6. ABA CENTRO DE CUSTOS
+        else if (name.includes("CUSTO") || name.includes("CENTRO")) {
+          for (let i = 1; i < rows.length; i++) {
+            const r = rows[i];
+            const mes = String(r[0] || '').trim();
+            if (!mes) continue;
+            mesesSet.add(mes);
+
+            parsedData.custos.push({
+              mes: mes,
+              chamados: parseNumber(r[1]),
+              faturamento: parseNumber(r[2]),
+              desconto: parseNumber(r[3]),
+              percDesconto: parseNumber(r[4]),
+              transpBruto: parseNumber(r[5]),
+              reembolsoTransp: parseNumber(r[6]),
+              transpReal: parseNumber(r[7]),
+              gastoAts: parseNumber(r[8]),
+              percGastoAts: parseNumber(r[9])
+            });
+          }
+        }
       });
 
-      // Extrair Períodos/Meses Únicos
-      extractPeriodos();
+      parsedData.listaMeses = Array.from(mesesSet);
       updateSelectPeriodos();
       updateAllDashboards();
-    }
-
-    function extractPeriodos() {
-      const pSet = new Set();
-      Object.keys(rawData).forEach(key => {
-        rawData[key].forEach(row => {
-          if (row.MES || row.Mes || row.PERIODO || row.Periodo) {
-            pSet.add(String(row.MES || row.Mes || row.PERIODO || row.Periodo).trim());
-          }
-        });
-      });
-      periodosDisponiveis = Array.from(pSet);
     }
 
     function updateSelectPeriodos() {
       const select = document.getElementById('periodo-select');
       select.innerHTML = '<option value="TODOS">Todos os Períodos</option>';
-      periodosDisponiveis.forEach(p => {
-        select.innerHTML += `<option value="${p}">${p}</option>`;
+      parsedData.listaMeses.forEach(m => {
+        select.innerHTML += `<option value="${m}">${m}</option>`;
       });
     }
 
@@ -930,30 +1049,17 @@
       updateAllDashboards();
     });
 
-    // Filtro de Dados por Mês
-    function filterByPeriod(dataArray) {
-      if (periodoSelecionado === 'TODOS') return dataArray;
-      return dataArray.filter(item => {
-        const val = String(item.MES || item.Mes || item.PERIODO || item.Periodo || '').trim();
-        return val === periodoSelecionado;
-      });
-    }
-
-    // Helper: Destruir Gráfico Existente
     function createChart(canvasId, config) {
       if (chartInstances[canvasId]) {
         chartInstances[canvasId].destroy();
       }
       
-      // Ajuste de cores padrão do tema
       const isDark = document.body.classList.contains('dark-mode');
       const textColor = isDark ? '#f5f5f7' : '#2b2c34';
       
       if (!config.options) config.options = {};
       config.options.responsive = true;
       config.options.maintainAspectRatio = false;
-      
-      // Garantir barras horizontais conforme regra
       if (!config.options.indexAxis) config.options.indexAxis = 'y';
 
       config.options.plugins = config.options.plugins || {};
@@ -963,7 +1069,6 @@
       chartInstances[canvasId] = new Chart(ctx, config);
     }
 
-    // ATUALIZAÇÃO GERAL DOS DASHBOARDS
     function updateAllDashboards() {
       renderVisaoGeral();
       renderChamados();
@@ -977,88 +1082,74 @@
 
     /* ---------------- ABA 1: VISÃO GERAL ---------------- */
     function renderVisaoGeral() {
-      const chamados = filterByPeriod(rawData.CHAMADOS);
-      
-      // Agrupamento Mensal para VG
-      const meses = periodosDisponiveis.length ? periodosDisponiveis : ['Jan', 'Fev', 'Mar'];
+      const meses = parsedData.listaMeses;
       const totalChamadosMes = meses.map(m => {
-        return rawData.CHAMADOS.filter(r => (r.MES||r.Mes||r.PERIODO) === m)
-          .reduce((acc, curr) => acc + Number(curr.TOTAL || curr.Total || 0), 0);
+        const item = parsedData.chamados.find(c => c.mes === m);
+        return item ? item.chamados : 0;
       });
 
       const slaMes = meses.map(m => {
-        const subset = rawData.CHAMADOS.filter(r => (r.MES||r.Mes||r.PERIODO) === m);
-        if(!subset.length) return 0;
-        const sum = subset.reduce((acc, curr) => acc + Number(curr.SLA_PORCENTAGEM || curr.SLA || 0), 0);
-        return Math.round(sum / subset.length);
+        const item = parsedData.chamados.find(c => c.mes === m);
+        return item ? item.percAtendidosSla : 0;
       });
 
-      // Chart 1: Chamados VG
       createChart('chartVGChamados', {
         type: 'bar',
-        data: {
-          labels: meses,
-          datasets: [{ data: totalChamadosMes, backgroundColor: colors.purpleDark, borderRadius: 6 }]
-        },
+        data: { labels: meses, datasets: [{ data: totalChamadosMes, backgroundColor: colors.purpleDark }] },
         options: { plugins: { datalabels: { color: '#fff', font: { weight: 'bold' } } } }
       });
 
-      // Chart 2: SLA VG
       createChart('chartVGSla', {
         type: 'bar',
-        data: {
-          labels: meses,
-          datasets: [{ data: slaMes, backgroundColor: colors.purpleMedium, borderRadius: 6 }]
-        },
+        data: { labels: meses, datasets: [{ data: slaMes, backgroundColor: colors.purpleMedium }] },
         options: {
           plugins: { datalabels: { formatter: (v) => v + '%', color: '#fff', font: { weight: 'bold' } } },
           scales: { x: { max: 100 } }
         }
       });
 
-      // 4 Mini Gráficos de Custos
-      const faturamentos = meses.map(m => rawData.CUSTOS.filter(r => (r.MES||r.Mes)==m).reduce((a,c)=>a+Number(c.FATURAMENTO||0),0));
-      const descontos = meses.map(m => rawData.CUSTOS.filter(r => (r.MES||r.Mes)==m).reduce((a,c)=>a+Number(c.DESCONTOS||0),0));
-      const transp = meses.map(m => rawData.CUSTOS.filter(r => (r.MES||r.Mes)==m).reduce((a,c)=>a+Number(c.TRANSPORTADORAS||0),0));
-      const at = meses.map(m => rawData.CUSTOS.filter(r => (r.MES||r.Mes)==m).reduce((a,c)=>a+Number(c.AT||0),0));
+      // Custos Mini
+      const fat = meses.map(m => (parsedData.custos.find(c=>c.mes===m)||{}).faturamento||0);
+      const desc = meses.map(m => (parsedData.custos.find(c=>c.mes===m)||{}).desconto||0);
+      const transp = meses.map(m => (parsedData.custos.find(c=>c.mes===m)||{}).transpReal||0);
+      const at = meses.map(m => (parsedData.custos.find(c=>c.mes===m)||{}).gastoAts||0);
 
-      const miniChartOpts = { plugins: { datalabels: { display: false } }, scales: { x: { display: false } } };
+      const miniOpts = { plugins: { datalabels: { display: false } }, scales: { x: { display: false } } };
 
-      createChart('chartVGFat', { type: 'bar', data: { labels: meses, datasets: [{ label: 'Faturamento', data: faturamentos, backgroundColor: '#2e7d32' }] }, options: miniChartOpts });
-      createChart('chartVGDesc', { type: 'bar', data: { labels: meses, datasets: [{ label: 'Descontos', data: descontos, backgroundColor: '#c62828' }] }, options: miniChartOpts });
-      createChart('chartVGTransp', { type: 'bar', data: { labels: meses, datasets: [{ label: 'Transportadoras', data: transp, backgroundColor: '#ef6c00' }] }, options: miniChartOpts });
-      createChart('chartVGAt', { type: 'bar', data: { labels: meses, datasets: [{ label: 'AT', data: at, backgroundColor: '#1565c0' }] }, options: miniChartOpts });
+      createChart('chartVGFat', { type: 'bar', data: { labels: meses, datasets: [{ data: fat, backgroundColor: '#2e7d32' }] }, options: miniOpts });
+      createChart('chartVGDesc', { type: 'bar', data: { labels: meses, datasets: [{ data: desc, backgroundColor: '#c62828' }] }, options: miniOpts });
+      createChart('chartVGTransp', { type: 'bar', data: { labels: meses, datasets: [{ data: transp, backgroundColor: '#ef6c00' }] }, options: miniOpts });
+      createChart('chartVGAt', { type: 'bar', data: { labels: meses, datasets: [{ data: at, backgroundColor: '#1565c0' }] }, options: miniOpts });
 
-      // O que Melhorou x O que Piorou
-      const listMelhorou = document.getElementById('list-melhorou');
-      const listPiorou = document.getElementById('list-piorou');
-      
-      listMelhorou.innerHTML = `
-        <li class="performance-item"><span class="badge badge-success"><i class="fa-solid fa-arrow-up"></i> SLA</span> Aumento de cumprimento de SLA nas demandas críticas.</li>
-        <li class="performance-item"><span class="badge badge-success"><i class="fa-solid fa-arrow-down"></i> Custos</span> Redução de gastos logísticos com transportadoras.</li>
+      // Melhorou / Piorou
+      document.getElementById('list-melhorou').innerHTML = `
+        <li class="performance-item"><span class="badge badge-success"><i class="fa-solid fa-arrow-up"></i> SLA</span> Cumprimento do SLA estabilizado em patamares elevados.</li>
+        <li class="performance-item"><span class="badge badge-success"><i class="fa-solid fa-arrow-down"></i> Custos</span> Controle no rebalanceamento dos reembolsos de transportadoras.</li>
       `;
 
-      listPiorou.innerHTML = `
-        <li class="performance-item"><span class="badge badge-danger"><i class="fa-solid fa-arrow-up"></i> Sintomas</span> Reincidência de chamados com sintoma de Conectividade.</li>
-        <li class="performance-item"><span class="badge badge-danger"><i class="fa-solid fa-arrow-up"></i> Trocas</span> Leve alta no volume de trocas de equipamentos.</li>
+      document.getElementById('list-piorou').innerHTML = `
+        <li class="performance-item"><span class="badge badge-danger"><i class="fa-solid fa-arrow-up"></i> Volume</span> Leve oscilação no volume do Top 1 Modelo Recorrente.</li>
+        <li class="performance-item"><span class="badge badge-danger"><i class="fa-solid fa-arrow-up"></i> Trocas</span> Aumento pontual em trocas operacionais em meses de maior faturamento.</li>
       `;
 
-      // Diagnóstico Estratégico
       document.getElementById('diagnostico-estrategico').innerHTML = `
         <p style="font-size: 0.88rem; line-height: 1.5; color: var(--text-muted);">
-          A operação apresenta estabilidade no volume total de chamados atendidos com tendência de alta no cumprimento de SLA. 
-          <strong>Recomendação Primária:</strong> Focar na mitigação do Top 2 modelos mais reincidentes para reduzir trocas preventivas e alinhar junto à equipe técnica a padronização dos diagnósticos de entrada.
+          O relatório demonstra boa saúde operacional. Recomenda-se acompanhamento direto do Top 5 Sintomas Recorrentes para estipular plano de manutenção preventiva junto aos parceiros logísticos e operacionais.
         </p>
       `;
     }
 
     /* ---------------- ABA 2: CHAMADOS ---------------- */
     function renderChamados() {
-      const data = filterByPeriod(rawData.CHAMADOS);
-      const total = data.reduce((a,c)=>a+Number(c.TOTAL||c.Total||0), 0);
-      const atendidos = data.reduce((a,c)=>a+Number(c.ATENDIDOS||c.Atendidos||0), 0);
-      const sla = data.reduce((a,c)=>a+Number(c.SLA_CUMPRIDO||c.SlaCumprido||0), 0);
-      
+      let chamadosSub = parsedData.chamados;
+      if (periodoSelecionado !== 'TODOS') {
+        chamadosSub = chamadosSub.filter(c => c.mes === periodoSelecionado);
+      }
+
+      const total = chamadosSub.reduce((a,c)=>a+c.chamados, 0);
+      const atendidos = chamadosSub.reduce((a,c)=>a+c.atendidos, 0);
+      const sla = chamadosSub.reduce((a,c)=>a+c.atendidosSla, 0);
+
       const percAtendidos = total ? Math.round((atendidos/total)*100) : 0;
       const percSla = atendidos ? Math.round((sla/atendidos)*100) : 0;
 
@@ -1071,40 +1162,31 @@
       createChart('chartChamadosAtendidos', {
         type: 'bar',
         data: { labels: ['Atendidos'], datasets: [{ data: [atendidos], backgroundColor: colors.purpleMedium }] },
-        options: {
-          plugins: {
-            datalabels: { formatter: (v) => `${v} (${percAtendidos}%)`, color: '#fff', font: { weight: 'bold' } }
-          }
-        }
+        options: { plugins: { datalabels: { formatter: (v) => `${v} (${percAtendidos}%)`, color: '#fff', font: { weight: 'bold' } } } }
       });
 
       createChart('chartChamadosSla', {
         type: 'bar',
         data: { labels: ['SLA Cumprido'], datasets: [{ data: [sla], backgroundColor: colors.purplePastel }] },
-        options: {
-          plugins: {
-            datalabels: { formatter: (v) => `${v} (${percSla}%)`, color: '#fff', font: { weight: 'bold' } }
-          }
-        }
+        options: { plugins: { datalabels: { formatter: (v) => `${v} (${percSla}%)`, color: '#fff', font: { weight: 'bold' } } } }
       });
     }
 
     /* ---------------- ABA 3: MODELOS ---------------- */
     function renderModelos() {
-      const data = filterByPeriod(rawData.MODELOS);
-      const counts = {};
-      
-      data.forEach(r => {
-        const mod = r.MODELO || r.Modelo || 'Outros';
-        const qtd = Number(r.QUANTIDADE || r.Qtd || 1);
-        counts[mod] = (counts[mod] || 0) + qtd;
-      });
+      const modelosList = parsedData.modelos.map(m => {
+        let val = 0;
+        if (periodoSelecionado === 'TODOS') {
+          val = Object.values(m.meses).reduce((a,c)=>a+c, 0);
+        } else {
+          val = m.meses[periodoSelecionado] || 0;
+        }
+        return { modelo: m.modelo, valor: val };
+      }).sort((a,b)=>b.valor-a.valor).slice(0, 5);
 
-      const sorted = Object.entries(counts).sort((a,b)=>b[1]-a[1]).slice(0, 5);
-      const totalTop = sorted.reduce((a,c)=>a+c[1], 0);
-
-      const labels = sorted.map(s => s[0]);
-      const values = sorted.map(s => s[1]);
+      const totalTop = modelosList.reduce((a,c)=>a+c.valor, 0);
+      const labels = modelosList.map(m => m.modelo);
+      const values = modelosList.map(m => m.valor);
 
       createChart('chartModelos', {
         type: 'bar',
@@ -1128,20 +1210,19 @@
 
     /* ---------------- ABA 4: SINTOMAS ---------------- */
     function renderSintomas() {
-      const data = filterByPeriod(rawData.SINTOMAS);
-      const counts = {};
+      const sintomasList = parsedData.sintomas.map(s => {
+        let val = 0;
+        if (periodoSelecionado === 'TODOS') {
+          val = Object.values(s.meses).reduce((a,c)=>a+c, 0);
+        } else {
+          val = s.meses[periodoSelecionado] || 0;
+        }
+        return { sintoma: s.sintoma, valor: val };
+      }).sort((a,b)=>b.valor-a.valor).slice(0, 5);
 
-      data.forEach(r => {
-        const sint = r.SINTOMA || r.Sintoma || 'Outros';
-        const qtd = Number(r.QUANTIDADE || r.Qtd || 1);
-        counts[sint] = (counts[sint] || 0) + qtd;
-      });
-
-      const sorted = Object.entries(counts).sort((a,b)=>b[1]-a[1]).slice(0, 5);
-      const totalTop = sorted.reduce((a,c)=>a+c[1], 0);
-
-      const labels = sorted.map(s => s[0]);
-      const values = sorted.map(s => s[1]);
+      const totalTop = sintomasList.reduce((a,c)=>a+c.valor, 0);
+      const labels = sintomasList.map(s => s.sintoma);
+      const values = sintomasList.map(s => s.valor);
 
       createChart('chartSintomas', {
         type: 'bar',
@@ -1165,124 +1246,138 @@
 
     /* ---------------- ABA 5: DESLIGAMENTOS ---------------- */
     function renderDesligamentos() {
-      const meses = periodosDisponiveis.length ? periodosDisponiveis : ['Jan', 'Fev', 'Mar'];
-      const values = meses.map(m => {
-        return rawData.DESLIGAMENTOS.filter(r => (r.MES||r.Mes)==m)
-          .reduce((a,c)=>a+Number(c.QUANTIDADE||c.Qtd||1), 0);
-      });
+      let data = parsedData.desligamentos;
+      if (periodoSelecionado !== 'TODOS') {
+        data = data.filter(d => d.mes === periodoSelecionado);
+      }
+
+      const labels = data.map(d => d.mes);
+      const values = data.map(d => d.quantidade);
 
       createChart('chartDesligamentos', {
         type: 'bar',
-        data: { labels: meses, datasets: [{ data: values, backgroundColor: colors.purpleDark }] },
+        data: { labels: labels, datasets: [{ data: values, backgroundColor: colors.purpleDark }] },
         options: { plugins: { datalabels: { color: '#fff', font: { weight: 'bold' } } } }
       });
     }
 
-    /* ---------------- ABA 6: TROCAS DE EQUIPAMENTOS ---------------- */
+    /* ---------------- ABA 6: TROCAS ---------------- */
     function renderTrocas() {
-      const meses = periodosDisponiveis.length ? periodosDisponiveis : ['Jan', 'Fev', 'Mar'];
-      const values = meses.map(m => {
-        return rawData.TROCAS.filter(r => (r.MES||r.Mes)==m)
-          .reduce((a,c)=>a+Number(c.QUANTIDADE||c.Qtd||1), 0);
-      });
+      let data = parsedData.trocas;
+      if (periodoSelecionado !== 'TODOS') {
+        data = data.filter(t => t.mes === periodoSelecionado);
+      }
+
+      const labels = data.map(t => t.mes);
+      const values = data.map(t => t.quantidade);
 
       createChart('chartTrocas', {
         type: 'bar',
-        data: { labels: meses, datasets: [{ data: values, backgroundColor: colors.purpleMedium }] },
+        data: { labels: labels, datasets: [{ data: values, backgroundColor: colors.purpleMedium }] },
         options: { plugins: { datalabels: { color: '#fff', font: { weight: 'bold' } } } }
       });
     }
 
-    /* ---------------- ABA 7: CUSTOS OPERACIONAIS ---------------- */
+    /* ---------------- ABA 7: CENTRO DE CUSTOS ---------------- */
     function renderCustos() {
       const kpisContainer = document.getElementById('custos-kpis');
       const chartsContainer = document.getElementById('custos-charts-container');
       const tbody = document.getElementById('custos-table-body');
-      
       tbody.innerHTML = '';
 
       if (periodoSelecionado === 'TODOS') {
         kpisContainer.style.display = 'none';
         chartsContainer.style.display = 'flex';
 
-        const meses = periodosDisponiveis;
-        const desc = meses.map(m => rawData.CUSTOS.filter(r=>(r.MES||r.Mes)==m).reduce((a,c)=>a+Number(c.DESCONTOS||0),0));
-        const transp = meses.map(m => rawData.CUSTOS.filter(r=>(r.MES||r.Mes)==m).reduce((a,c)=>a+Number(c.TRANSPORTADORAS||0),0));
-        const at = meses.map(m => rawData.CUSTOS.filter(r=>(r.MES||r.Mes)==m).reduce((a,c)=>a+Number(c.AT||0),0));
+        const meses = parsedData.listaMeses;
+        const desc = meses.map(m => (parsedData.custos.find(c=>c.mes===m)||{}).desconto||0);
+        const transp = meses.map(m => (parsedData.custos.find(c=>c.mes===m)||{}).transpReal||0);
+        const at = meses.map(m => (parsedData.custos.find(c=>c.mes===m)||{}).gastoAts||0);
 
         createChart('chartCustosDesc', { type: 'bar', data: { labels: meses, datasets: [{ data: desc, backgroundColor: '#c62828' }] } });
         createChart('chartCustosTransp', { type: 'bar', data: { labels: meses, datasets: [{ data: transp, backgroundColor: '#ef6c00' }] } });
         createChart('chartCustosAt', { type: 'bar', data: { labels: meses, datasets: [{ data: at, backgroundColor: '#1565c0' }] } });
 
-        // Tabela Todos os Meses
-        meses.forEach(m => {
-          const sub = rawData.CUSTOS.filter(r=>(r.MES||r.Mes)==m);
-          const f = sub.reduce((a,c)=>a+Number(c.FATURAMENTO||0),0);
-          const d = sub.reduce((a,c)=>a+Number(c.DESCONTOS||0),0);
-          const t = sub.reduce((a,c)=>a+Number(c.TRANSPORTADORAS||0),0);
-          const a = sub.reduce((a,c)=>a+Number(c.AT||0),0);
-
+        parsedData.custos.forEach(c => {
           tbody.innerHTML += `
             <tr>
-              <td><strong>${m}</strong></td>
-              <td>R$ ${f.toLocaleString()}</td>
-              <td>R$ ${d.toLocaleString()}</td>
-              <td>R$ ${t.toLocaleString()}</td>
-              <td>R$ ${a.toLocaleString()}</td>
+              <td><strong>${c.mes}</strong></td>
+              <td>${c.chamados}</td>
+              <td>R$ ${c.faturamento.toLocaleString()}</td>
+              <td>R$ ${c.desconto.toLocaleString()}</td>
+              <td>${c.percDesconto}%</td>
+              <td>R$ ${c.transpBruto.toLocaleString()}</td>
+              <td>R$ ${c.reembolsoTransp.toLocaleString()}</td>
+              <td>R$ ${c.transpReal.toLocaleString()}</td>
+              <td>R$ ${c.gastoAts.toLocaleString()}</td>
+              <td>${c.percGastoAts}%</td>
             </tr>
           `;
         });
 
       } else {
-        // Mês Específico
         kpisContainer.style.display = 'flex';
         chartsContainer.style.display = 'none';
 
-        const data = filterByPeriod(rawData.CUSTOS);
-        const f = data.reduce((a,c)=>a+Number(c.FATURAMENTO||0),0);
-        const d = data.reduce((a,c)=>a+Number(c.DESCONTOS||0),0);
-        const t = data.reduce((a,c)=>a+Number(c.TRANSPORTADORAS||0),0);
-        const a = data.reduce((a,c)=>a+Number(c.AT||0),0);
+        const item = parsedData.custos.find(c => c.mes === periodoSelecionado) || {};
+        
+        document.getElementById('kpi-fat').innerText = `R$ ${(item.faturamento||0).toLocaleString()}`;
+        document.getElementById('kpi-desc').innerText = `R$ ${(item.desconto||0).toLocaleString()}`;
+        document.getElementById('kpi-transp').innerText = `R$ ${(item.transpReal||0).toLocaleString()}`;
+        document.getElementById('kpi-at').innerText = `R$ ${(item.gastoAts||0).toLocaleString()}`;
 
-        document.getElementById('kpi-fat').innerText = `R$ ${f.toLocaleString()}`;
-        document.getElementById('kpi-desc').innerText = `R$ ${d.toLocaleString()}`;
-        document.getElementById('kpi-transp').innerText = `R$ ${t.toLocaleString()}`;
-        document.getElementById('kpi-at').innerText = `R$ ${a.toLocaleString()}`;
-
-        tbody.innerHTML = `
-          <tr>
-            <td><strong>${periodoSelecionado}</strong></td>
-            <td>R$ ${f.toLocaleString()}</td>
-            <td>R$ ${d.toLocaleString()}</td>
-            <td>R$ ${t.toLocaleString()}</td>
-            <td>R$ ${a.toLocaleString()}</td>
-          </tr>
-        `;
+        if (item.mes) {
+          tbody.innerHTML = `
+            <tr>
+              <td><strong>${item.mes}</strong></td>
+              <td>${item.chamados}</td>
+              <td>R$ ${item.faturamento.toLocaleString()}</td>
+              <td>R$ ${item.desconto.toLocaleString()}</td>
+              <td>${item.percDesconto}%</td>
+              <td>R$ ${item.transpBruto.toLocaleString()}</td>
+              <td>R$ ${item.reembolsoTransp.toLocaleString()}</td>
+              <td>R$ ${item.transpReal.toLocaleString()}</td>
+              <td>R$ ${item.gastoAts.toLocaleString()}</td>
+              <td>${item.percGastoAts}%</td>
+            </tr>
+          `;
+        }
       }
     }
 
     /* ---------------- ABA 8: PONTOS DE ATENÇÃO ---------------- */
     function renderAtencao() {
       const container = document.getElementById('matriz-risco-container');
-      container.innerHTML = `
-        <div class="risk-card high">
-          <div style="font-weight:700; font-size:0.9rem; margin-bottom:4px; color:#dc3545;">
-            <i class="fa-solid fa-triangle-exclamation"></i> Risco Alto: Oscilação em Gastos de Transportadora
-          </div>
-          <div style="font-size:0.82rem; color:var(--text-muted);">
-            Identificada oscilação acima de 15% entre meses consecutivos. Sugere-se renegociação de tabela de fretes e otimização das rotas de devolução.
-          </div>
-        </div>
+      
+      // Análise em Tempo Real de Oscilação dos Custos e SLA
+      let avisos = [];
 
-        <div class="risk-card medium">
-          <div style="font-weight:700; font-size:0.9rem; margin-bottom:4px; color:#ffc107;">
-            <i class="fa-solid fa-circle-exclamation"></i> Risco Médio: Concentração de Chamados no Top 1 Modelo
+      parsedData.custos.forEach((c, idx) => {
+        if (c.percDesconto > 10) {
+          avisos.push({
+            nivel: 'high',
+            titulo: `Alto Desconto em ${c.mes}`,
+            desc: `O valor de desconto em ${c.mes} ultrapassou ${c.percDesconto}%. Avaliar causas de descumprimento operacional ou bonificações atípicas.`
+          });
+        }
+      });
+
+      if (avisos.length === 0) {
+        avisos.push({
+          nivel: 'medium',
+          titulo: 'Análise de Estabilidade Operacional',
+          desc: 'Nenhuma oscilação crítica de custos acima de 10% detectada no período analisado. Acompanhar a evolução contínua das trocas de equipamentos.'
+        });
+      }
+
+      container.innerHTML = avisos.map(a => `
+        <div class="risk-card ${a.nivel}">
+          <div style="font-weight:700; font-size:0.9rem; margin-bottom:4px; color:${a.nivel==='high'?'#dc3545':'#ffc107'};">
+            <i class="fa-solid fa-triangle-exclamation"></i> ${a.titulo}
           </div>
-          <div style="font-size:0.82rem; color:var(--text-muted);">
-            O modelo mais recorrente representa uma fatia expressiva do total de chamados. Recomenda-se boletim técnico preventivo para os usuários desse modelo.
-          </div>
+          <div style="font-size:0.82rem; color:var(--text-muted);">${a.desc}</div>
         </div>
-      `;
+      `).join('');
     }
   </script>
 </body>
