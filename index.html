@@ -392,7 +392,7 @@
     .chart-container {
       position: relative;
       width: 100%;
-      min-height: 280px;
+      min-height: 320px;
     }
 
     /* Empty State */
@@ -667,7 +667,7 @@
           </div>
         </section>
 
-        <!-- ABA 2: CHAMADOS -->
+        <!-- ABA 2: CHAMADOS (AJUSTADA CONFORME REFERÊNCIA) -->
         <section id="tab-chamados" class="tab-content">
           <div class="dashboard-grid">
             <div class="card col-4">
@@ -894,12 +894,12 @@
       reader.readAsArrayBuffer(file);
     });
 
-    // PROCESSAMENTO DE ACORDO COM AS COLUNAS DA PLANILHA
+    // PROCESSAMENTO
     function processExcel(workbook) {
       parsedData = { chamados: [], modelos: [], sintomas: [], desligamentos: [], trocas: [], custos: [], listaMeses: [] };
       const mesesValidosSet = new Set();
 
-      // 1. ABA CHAMADOS (Captura a lista principal de Meses)
+      // ABA CHAMADOS
       workbook.SheetNames.forEach(sheetName => {
         if (sheetName.trim().toUpperCase().includes("CHAMADO")) {
           const sheet = workbook.Sheets[sheetName];
@@ -923,7 +923,7 @@
 
       parsedData.listaMeses = Array.from(mesesValidosSet);
 
-      // 2. PROCESSAMENTO DAS OUTRAS ABAS
+      // OUTRAS ABAS
       workbook.SheetNames.forEach(sheetName => {
         const name = sheetName.trim().toUpperCase();
         const sheet = workbook.Sheets[sheetName];
@@ -1136,36 +1136,62 @@
       `;
     }
 
-    /* ---------------- ABA 2: CHAMADOS ---------------- */
+    /* ---------------- ABA 2: CHAMADOS (CORRIGIDA MÊS A MÊS) ---------------- */
     function renderChamados() {
       let chamadosSub = parsedData.chamados;
       if (periodoSelecionado !== 'TODOS') {
         chamadosSub = chamadosSub.filter(c => c.mes === periodoSelecionado);
       }
 
-      const total = chamadosSub.reduce((a,c)=>a+c.chamados, 0);
-      const atendidos = chamadosSub.reduce((a,c)=>a+c.atendidos, 0);
-      const sla = chamadosSub.reduce((a,c)=>a+c.atendidosSla, 0);
+      const labelsMeses = chamadosSub.map(c => c.mes);
+      const valTotal = chamadosSub.map(c => c.chamados);
+      const valAtendidos = chamadosSub.map(c => c.atendidos);
+      const percAtendidosList = chamadosSub.map(c => c.percAtendidos);
+      const valSla = chamadosSub.map(c => c.atendidosSla);
+      const percSlaList = chamadosSub.map(c => c.percAtendidosSla);
 
-      const percAtendidos = total ? Math.round((atendidos/total)*100) : 0;
-      const percSla = atendidos ? Math.round((sla/atendidos)*100) : 0;
-
+      // Gráfico 1: Total Mês a Mês
       createChart('chartChamadosTotal', {
         type: 'bar',
-        data: { labels: ['Total Chamados'], datasets: [{ data: [total], backgroundColor: colors.purpleDark }] },
+        data: {
+          labels: labelsMeses,
+          datasets: [{ data: valTotal, backgroundColor: colors.purpleDark }]
+        },
         options: { plugins: { datalabels: { color: '#fff', font: { weight: 'bold' } } } }
       });
 
+      // Gráfico 2: Atendidos Mês a Mês com Porcentagem
       createChart('chartChamadosAtendidos', {
         type: 'bar',
-        data: { labels: ['Atendidos'], datasets: [{ data: [atendidos], backgroundColor: colors.purpleMedium }] },
-        options: { plugins: { datalabels: { formatter: (v) => `${v} (${percAtendidos}%)`, color: '#fff', font: { weight: 'bold' } } } }
+        data: {
+          labels: labelsMeses,
+          datasets: [{ data: valAtendidos, backgroundColor: colors.purpleMedium }]
+        },
+        options: {
+          plugins: {
+            datalabels: {
+              formatter: (v, ctx) => `${v} (${percAtendidosList[ctx.dataIndex]}%)`,
+              color: '#fff', font: { weight: 'bold' }
+            }
+          }
+        }
       });
 
+      // Gráfico 3: SLA Cumprido Mês a Mês com Porcentagem
       createChart('chartChamadosSla', {
         type: 'bar',
-        data: { labels: ['SLA Cumprido'], datasets: [{ data: [sla], backgroundColor: colors.purplePastel }] },
-        options: { plugins: { datalabels: { formatter: (v) => `${v} (${percSla}%)`, color: '#fff', font: { weight: 'bold' } } } }
+        data: {
+          labels: labelsMeses,
+          datasets: [{ data: valSla, backgroundColor: colors.purplePastel }]
+        },
+        options: {
+          plugins: {
+            datalabels: {
+              formatter: (v, ctx) => `${v} (${percSlaList[ctx.dataIndex]}%)`,
+              color: '#fff', font: { weight: 'bold' }
+            }
+          }
+        }
       });
     }
 
