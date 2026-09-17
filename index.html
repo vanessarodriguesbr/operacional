@@ -88,6 +88,11 @@
       transition: opacity 0.3s ease;
     }
 
+    .auth-overlay.hidden {
+      display: none !important;
+      pointer-events: none !important;
+    }
+
     .auth-card {
       background: var(--bg-secondary);
       border: 1px solid var(--border-color);
@@ -198,7 +203,7 @@
     .sidebar-menu a {
       display: flex; align-items: center; gap: 12px; padding: 12px 15px;
       color: var(--text-muted); text-decoration: none; font-size: 0.88rem; font-weight: 500;
-      border-radius: 8px; transition: all 0.2s ease;
+      border-radius: 8px; transition: all 0.2s ease; cursor: pointer;
     }
     .sidebar-menu a:hover, .sidebar-menu li.active a { background-color: var(--purple-light); color: var(--purple-primary); font-weight: 600; }
     .sidebar-menu a i { font-size: 1.1rem; width: 20px; text-align: center; }
@@ -246,7 +251,6 @@
       display: flex; align-items: center; gap: 8px; transition: background 0.2s;
     }
     .btn-upload:hover { background-color: var(--purple-hover); }
-    .btn-upload:disabled { opacity: 0.5; cursor: not-allowed; }
     #file-input { display: none; }
 
     .content-area { padding: 25px 30px; flex-grow: 1; }
@@ -420,8 +424,6 @@
         <!-- ABA 1: VISÃO GERAL -->
         <section id="tab-visao-geral" class="tab-content active">
           <div class="dashboard-grid">
-            
-            <!-- BLOCOS SUPERIORES: COMPARATIVO MENSAL DE CHAMADOS E SLA -->
             <div class="card col-12">
               <div style="font-weight:700; font-size:1rem; margin-bottom:15px; color:var(--text-main);">
                 Comparativo Mensal — Chamados e SLA
@@ -441,7 +443,6 @@
               </div>
             </div>
 
-            <!-- EVOLUÇÃO DE CUSTOS OPERACIONAIS (4 MINI SPARKLINES) -->
             <div class="col-12" style="margin-top:10px;">
               <div style="font-weight:700; font-size:1rem; color:var(--text-main); margin-bottom:2px;">
                 Evolução de Custos Operacionais
@@ -486,7 +487,6 @@
                 <div class="chart-container" style="min-height:150px;"><canvas id="chartVGDesc"></canvas></div>
               </div>
             </div>
-
           </div>
         </section>
 
@@ -586,6 +586,42 @@
 
   <script>
     // =========================================================================
+    // INICIALIZAÇÃO IMEDIATA DA INTERFACE (GARANTE NAVEGAÇÃO E TEMA SEMPRE ATIVOS)
+    // =========================================================================
+    document.addEventListener('DOMContentLoaded', () => {
+      // 1. Navegação por Abas
+      document.querySelectorAll('.sidebar-menu li').forEach(item => {
+        item.addEventListener('click', (e) => {
+          e.preventDefault();
+          document.querySelectorAll('.sidebar-menu li').forEach(li => li.classList.remove('active'));
+          item.classList.add('active');
+          
+          const tabId = item.getAttribute('data-tab');
+          document.querySelectorAll('.tab-content').forEach(tab => tab.classList.remove('active'));
+          
+          const targetTab = document.getElementById(`tab-${tabId}`);
+          if (targetTab) {
+            targetTab.classList.add('active');
+          }
+        });
+      });
+
+      // 2. Alternar Tema Claro / Escuro
+      const themeBtn = document.getElementById('theme-btn');
+      const themeIcon = document.getElementById('theme-icon');
+      if (themeBtn) {
+        themeBtn.addEventListener('click', () => {
+          document.body.classList.toggle('dark-mode');
+          const isDark = document.body.classList.contains('dark-mode');
+          themeIcon.className = isDark ? 'fa-solid fa-toggle-on' : 'fa-solid fa-toggle-off';
+          themeBtn.querySelector('span').innerHTML = isDark ? 
+            '<i class="fa-solid fa-sun"></i> Modo Claro' : '<i class="fa-solid fa-moon"></i> Modo Escuro';
+          updateAllDashboards();
+        });
+      }
+    });
+
+    // =========================================================================
     // CONFIGURAÇÃO DO FIREBASE
     // =========================================================================
     const firebaseConfig = {
@@ -597,9 +633,16 @@
       appId: "1:197553256089:web:ce1b9fa3d9b40f1876aa08"
     };
 
-    firebase.initializeApp(firebaseConfig);
-    const auth = firebase.auth();
-    const db = firebase.firestore();
+    let auth = null;
+    let db = null;
+
+    try {
+      firebase.initializeApp(firebaseConfig);
+      auth = firebase.auth();
+      db = firebase.firestore();
+    } catch (e) {
+      console.error("Erro ao inicializar Firebase:", e);
+    }
 
     Chart.register(ChartDataLabels);
 
@@ -625,10 +668,15 @@
     const userNameTag = document.getElementById('user-name-tag');
     const btnLogout = document.getElementById('btn-logout');
 
+    function closeAuthModal() {
+      if (authModal) {
+        authModal.classList.add('hidden');
+      }
+    }
+
     btnGuest.addEventListener('click', () => {
       isAdmin = false;
-      authModal.style.opacity = '0';
-      setTimeout(() => authModal.style.display = 'none', 300);
+      closeAuthModal();
       userAvatarTag.innerText = 'V';
       userNameTag.innerText = 'Visitante';
       btnUploadHeader.style.display = 'none';
@@ -646,11 +694,15 @@
       const email = document.getElementById('admin-email').value;
       const pass = document.getElementById('admin-password').value;
 
+      if (!auth) {
+        alert("Erro na conexão com Firebase.");
+        return;
+      }
+
       auth.signInWithEmailAndPassword(email, pass)
         .then((userCredential) => {
           isAdmin = true;
-          authModal.style.opacity = '0';
-          setTimeout(() => authModal.style.display = 'none', 300);
+          closeAuthModal();
           userAvatarTag.innerText = 'AD';
           userNameTag.innerText = 'Admin';
           btnUploadHeader.style.display = 'flex';
@@ -663,13 +715,14 @@
     });
 
     btnLogout.addEventListener('click', () => {
-      auth.signOut().then(() => {
-        location.reload();
-      });
+      if (auth) auth.signOut();
+      location.reload();
     });
 
     // --- SINCRONIZAÇÃO FIRESTORE EM TEMPO REAL ---
     function initFirestoreListener() {
+      if (!db) return;
+      
       db.collection('relatorio_operacional').doc('dados_consolidados')
         .onSnapshot((doc) => {
           if (doc.exists) {
@@ -720,15 +773,17 @@
           const now = new Date();
           const timeStr = `${now.toLocaleDateString()} ${now.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}`;
 
-          db.collection('relatorio_operacional').doc('dados_consolidados').set({
-            payload: parsedData,
-            lastUpdated: timeStr,
-            updatedBy: auth.currentUser ? auth.currentUser.email : 'Admin'
-          }).then(() => {
-            alert("Planilha carregada e sincronizada com sucesso no banco de dados!");
-          }).catch((err) => {
-            alert("Erro ao salvar no Firestore: " + err.message);
-          });
+          if (db) {
+            db.collection('relatorio_operacional').doc('dados_consolidados').set({
+              payload: parsedData,
+              lastUpdated: timeStr,
+              updatedBy: auth.currentUser ? auth.currentUser.email : 'Admin'
+            }).then(() => {
+              alert("Planilha carregada e sincronizada com sucesso no banco de dados!");
+            }).catch((err) => {
+              alert("Erro ao salvar no Firestore: " + err.message);
+            });
+          }
 
         } catch (error) {
           alert("Erro ao ler o arquivo Excel. Verifique a estrutura das abas.");
@@ -880,16 +935,20 @@
 
     function updateSelectPeriodos() {
       const select = document.getElementById('periodo-select');
+      if (!select) return;
       select.innerHTML = '<option value="TODOS">Todos os Períodos</option>';
       parsedData.listaMeses.forEach(m => {
         select.innerHTML += `<option value="${m}">${m}</option>`;
       });
     }
 
-    document.getElementById('periodo-select').addEventListener('change', (e) => {
-      periodoSelecionado = e.target.value;
-      updateAllDashboards();
-    });
+    const selectPeriodo = document.getElementById('periodo-select');
+    if (selectPeriodo) {
+      selectPeriodo.addEventListener('change', (e) => {
+        periodoSelecionado = e.target.value;
+        updateAllDashboards();
+      });
+    }
 
     // --- GRÁFICOS E RENDERIZAÇÃO ---
     function createPillChart(canvasId, labels, dataValues, bgColors, datalabelFormatter, fontSize = 13) {
@@ -987,10 +1046,12 @@
       createPillChart('chartChamadosSla', labelsMeses, valSla, colors.purplePastel, (v, ctx) => `${v} (${percSlaList[ctx.dataIndex]}%)`, 13);
 
       const tbody = document.getElementById('chamados-table-body');
-      tbody.innerHTML = '';
-      chamadosSub.forEach(c => {
-        tbody.innerHTML += `<tr><td><strong>${c.mes}</strong></td><td>${c.chamados.toLocaleString()}</td><td>${c.atendidos.toLocaleString()}</td><td>${c.percAtendidos}%</td><td>${c.atendidosSla.toLocaleString()}</td><td style="font-weight:700; color:var(--purple-primary);">${c.percAtendidosSla}%</td></tr>`;
-      });
+      if (tbody) {
+        tbody.innerHTML = '';
+        chamadosSub.forEach(c => {
+          tbody.innerHTML += `<tr><td><strong>${c.mes}</strong></td><td>${c.chamados.toLocaleString()}</td><td>${c.atendidos.toLocaleString()}</td><td>${c.percAtendidos}%</td><td>${c.atendidosSla.toLocaleString()}</td><td style="font-weight:700; color:var(--purple-primary);">${c.percAtendidosSla}%</td></tr>`;
+        });
+      }
     }
 
     function renderModelos() {
@@ -1091,11 +1152,12 @@
       const kpisContainer = document.getElementById('custos-kpis');
       const chartsContainer = document.getElementById('custos-charts-container');
       const tbody = document.getElementById('custos-table-body');
+      if (!tbody) return;
       tbody.innerHTML = '';
 
       if (periodoSelecionado === 'TODOS') {
-        kpisContainer.style.display = 'none';
-        chartsContainer.style.display = 'grid';
+        if (kpisContainer) kpisContainer.style.display = 'none';
+        if (chartsContainer) chartsContainer.style.display = 'grid';
 
         const meses = parsedData.listaMeses;
         const desc = meses.map(m => (parsedData.custos.find(c=>c.mes===m)||{}).desconto||0);
@@ -1106,22 +1168,31 @@
         createPillChart('chartCustosTransp', meses, transp, '#f97316', (v) => formatBRL(v), 12);
         createPillChart('chartCustosAt', meses, at, '#8b5cf6', (v) => formatBRL(v), 12);
 
-        document.getElementById('total-acumulado-desc').innerText = formatBRL(desc.reduce((a,c)=>a+c, 0));
-        document.getElementById('total-acumulado-transp').innerText = formatBRL(transp.reduce((a,c)=>a+c, 0));
-        document.getElementById('total-acumulado-at').innerText = formatBRL(at.reduce((a,c)=>a+c, 0));
+        const elDesc = document.getElementById('total-acumulado-desc');
+        const elTransp = document.getElementById('total-acumulado-transp');
+        const elAt = document.getElementById('total-acumulado-at');
+
+        if (elDesc) elDesc.innerText = formatBRL(desc.reduce((a,c)=>a+c, 0));
+        if (elTransp) elTransp.innerText = formatBRL(transp.reduce((a,c)=>a+c, 0));
+        if (elAt) elAt.innerText = formatBRL(at.reduce((a,c)=>a+c, 0));
 
         parsedData.custos.forEach(c => {
           tbody.innerHTML += `<tr><td><strong>${c.mes}</strong></td><td>${formatBRL(c.faturamento)}</td><td style="color: #ef4444; font-weight: 600;">${formatBRL(c.desconto)}</td><td>${formatBRL(c.transpBruto)}</td><td>${formatBRL(c.reembolsoTransp)}</td><td style="color: #f97316; font-weight: 600;">${formatBRL(c.transpReal)}</td><td style="color: #8b5cf6; font-weight: 600;">${formatBRL(c.gastoAts)}</td></tr>`;
         });
       } else {
-        kpisContainer.style.display = 'flex';
-        chartsContainer.style.display = 'none';
+        if (kpisContainer) kpisContainer.style.display = 'flex';
+        if (chartsContainer) chartsContainer.style.display = 'none';
 
         const item = parsedData.custos.find(c => c.mes === periodoSelecionado) || {};
-        document.getElementById('kpi-fat').innerText = formatBRL(item.faturamento||0);
-        document.getElementById('kpi-desc').innerText = formatBRL(item.desconto||0);
-        document.getElementById('kpi-transp').innerText = formatBRL(item.transpReal||0);
-        document.getElementById('kpi-at').innerText = formatBRL(item.gastoAts||0);
+        const elFat = document.getElementById('kpi-fat');
+        const elDesc = document.getElementById('kpi-desc');
+        const elTransp = document.getElementById('kpi-transp');
+        const elAt = document.getElementById('kpi-at');
+
+        if (elFat) elFat.innerText = formatBRL(item.faturamento||0);
+        if (elDesc) elDesc.innerText = formatBRL(item.desconto||0);
+        if (elTransp) elTransp.innerText = formatBRL(item.transpReal||0);
+        if (elAt) elAt.innerText = formatBRL(item.gastoAts||0);
 
         if (item.mes) {
           tbody.innerHTML = `<tr><td><strong>${item.mes}</strong></td><td>${formatBRL(item.faturamento)}</td><td style="color: #ef4444; font-weight: 600;">${formatBRL(item.desconto)}</td><td>${formatBRL(item.transpBruto)}</td><td>${formatBRL(item.reembolsoTransp)}</td><td style="color: #f97316; font-weight: 600;">${formatBRL(item.transpReal)}</td><td style="color: #8b5cf6; font-weight: 600;">${formatBRL(item.gastoAts)}</td></tr>`;
@@ -1131,6 +1202,7 @@
 
     function renderAtencao() {
       const container = document.getElementById('matriz-risco-container');
+      if (!container) return;
       let avisos = [];
 
       parsedData.custos.forEach((c) => {
