@@ -792,15 +792,14 @@
   <script>
     Chart.register(ChartDataLabels);
 
-    // Estruturas Processadas
     let parsedData = {
-      chamados: [],       // { mes, chamados, atendidos, percAtendidos, atendidosSla, percAtendidosSla }
-      modelos: [],        // { modelo, meses: { "JANEIRO": valor, ... } }
-      sintomas: [],       // { sintoma, meses: { "JANEIRO": valor, ... } }
-      desligamentos: [],  // { mes, quantidade, porcentagem }
-      trocas: [],         // { mes, quantidade, porcentagem }
-      custos: [],         // { mes, chamados, faturamento, desconto, percDesconto, transpBruto, reembolsoTransp, transpReal, gastoAts, percGastoAts }
-      listaMeses: []      // Lista ordenada de meses encontrados
+      chamados: [],
+      modelos: [],
+      sintomas: [],
+      desligamentos: [],
+      trocas: [],
+      custos: [],
+      listaMeses: []
     };
 
     let periodoSelecionado = 'TODOS';
@@ -814,16 +813,13 @@
       purpleSoft: '#ce93d8'
     };
 
-    // Função de limpeza e conversão numérica flexível
     function parseNumber(val) {
       if (val === undefined || val === null || val === '') return 0;
       if (typeof val === 'number') return val;
       
       let str = String(val).trim();
-      // Remove R$, %, espaços
       str = str.replace(/R\$/g, '').replace(/%/g, '').trim();
       
-      // Se tiver vírgula como decimal (padrão BR)
       if (str.includes(',') && str.includes('.')) {
         str = str.replace(/\./g, '').replace(',', '.');
       } else if (str.includes(',')) {
@@ -832,6 +828,15 @@
       
       const num = parseFloat(str);
       return isNaN(num) ? 0 : num;
+    }
+
+    // Porcentagens tratadas (Ex: 0.95 vira 95)
+    function parsePercentage(val) {
+      let n = parseNumber(val);
+      if (n > 0 && n <= 1) {
+        return Math.round(n * 100);
+      }
+      return Math.round(n);
     }
 
     // Alternar Tema
@@ -890,148 +895,140 @@
       reader.readAsArrayBuffer(file);
     });
 
-    // PROCESSAMENTO E MAPEAMENTO DAS COLUNAS EXATAS
+    // PROCESSAMENTO FILTRADO DE DADOS
     function processExcel(workbook) {
-      // Resetar dados
       parsedData = { chamados: [], modelos: [], sintomas: [], desligamentos: [], trocas: [], custos: [], listaMeses: [] };
-      const mesesSet = new Set();
+      const mesesValidosSet = new Set();
 
+      // 1. PRIMEIRA PASSAGEM: Ler a aba CHAMADOS para definir os MESES MESTRES da empresa
+      workbook.SheetNames.forEach(sheetName => {
+        if (sheetName.trim().toUpperCase().includes("CHAMADO")) {
+          const sheet = workbook.Sheets[sheetName];
+          const rows = XLSX.utils.sheet_to_json(sheet, { header: 1, defval: "" });
+          for (let i = 1; i < rows.length; i++) {
+            const mes = String(rows[i][0] || '').trim().toUpperCase();
+            if (mes && !mes.includes("TOTAL")) {
+              mesesValidosSet.add(mes);
+              parsedData.chamados.push({
+                mes: mes,
+                chamados: parseNumber(rows[i][1]),
+                atendidos: parseNumber(rows[i][2]),
+                percAtendidos: parsePercentage(rows[i][3]),
+                atendidosSla: parseNumber(rows[i][4]),
+                percAtendidosSla: parsePercentage(rows[i][5])
+              });
+            }
+          }
+        }
+      });
+
+      parsedData.listaMeses = Array.from(mesesValidosSet);
+
+      // 2. SEGUNDA PASSAGEM: Ler as demais abas filtrando estritamente pelos meses mestres
       workbook.SheetNames.forEach(sheetName => {
         const name = sheetName.trim().toUpperCase();
         const sheet = workbook.Sheets[sheetName];
-        // Converte a aba em matriz (linha por linha, coluna por coluna)
         const rows = XLSX.utils.sheet_to_json(sheet, { header: 1, defval: "" });
-        if (rows.length <= 1) return; // pular se estiver vazia
+        if (rows.length <= 1) return;
 
-        // 1. ABA CHAMADOS
-        if (name.includes("CHAMADO")) {
-          for (let i = 1; i < rows.length; i++) {
-            const r = rows[i];
-            const mes = String(r[0] || '').trim();
-            if (!mes) continue;
-            mesesSet.add(mes);
+        // ABA MODELOS
+        if (name.includes("MODELO")) {
+          const header = rows[0].map(h => String(h || '').trim().toUpperCase());
+          const colunasValidas = [];
 
-            parsedData.chamados.push({
-              mes: mes,
-              chamados: parseNumber(r[1]),
-              atendidos: parseNumber(r[2]),
-              percAtendidos: parseNumber(r[3]),
-              atendidosSla: parseNumber(r[4]),
-              percAtendidosSla: parseNumber(r[5])
-            });
-          }
-        }
-
-        // 2. ABA MODELOS (Matricial)
-        else if (name.includes("MODELO")) {
-          const header = rows[0];
-          // As colunas de B em diante são os meses
-          const mesesColunas = [];
-          for (let c = 1; c < header.length; c++) {
-            const nomeMes = String(header[c] || `Mês ${c}`).trim();
-            if (nomeMes) {
-              mesesColunas.push({ colIndex: c, nomeMes: nomeMes });
-              mesesSet.add(nomeMes);
+          header.forEach((h, colIdx) => {
+            if (colIdx > 0 && parsedData.listaMeses.includes(h)) {
+              colunasValidas.push({ colIndex: colIdx, nomeMes: h });
             }
-          }
+          });
 
           for (let i = 1; i < rows.length; i++) {
-            const r = rows[i];
-            const modelo = String(r[0] || '').trim();
-            if (!modelo) continue;
+            const modelo = String(rows[i][0] || '').trim();
+            if (!modelo || modelo.toUpperCase().includes("TOTAL")) continue;
 
             const mesesValores = {};
-            mesesColunas.forEach(mc => {
-              mesesValores[mc.nomeMes] = parseNumber(r[mc.colIndex]);
+            colunasValidas.forEach(c => {
+              mesesValores[c.nomeMes] = parseNumber(rows[i][c.colIndex]);
             });
 
             parsedData.modelos.push({ modelo: modelo, meses: mesesValores });
           }
         }
 
-        // 3. ABA SINTOMAS (Matricial)
+        // ABA SINTOMAS
         else if (name.includes("SINTOMA")) {
-          const header = rows[0];
-          const mesesColunas = [];
-          for (let c = 1; c < header.length; c++) {
-            const nomeMes = String(header[c] || `Mês ${c}`).trim();
-            if (nomeMes) {
-              mesesColunas.push({ colIndex: c, nomeMes: nomeMes });
-              mesesSet.add(nomeMes);
+          const header = rows[0].map(h => String(h || '').trim().toUpperCase());
+          const colunasValidas = [];
+
+          header.forEach((h, colIdx) => {
+            if (colIdx > 0 && parsedData.listaMeses.includes(h)) {
+              colunasValidas.push({ colIndex: colIdx, nomeMes: h });
             }
-          }
+          });
 
           for (let i = 1; i < rows.length; i++) {
-            const r = rows[i];
-            const sintoma = String(r[0] || '').trim();
-            if (!sintoma) continue;
+            const sintoma = String(rows[i][0] || '').trim();
+            if (!sintoma || sintoma.toUpperCase().includes("TOTAL")) continue;
 
             const mesesValores = {};
-            mesesColunas.forEach(mc => {
-              mesesValores[mc.nomeMes] = parseNumber(r[mc.colIndex]);
+            colunasValidas.forEach(c => {
+              mesesValores[c.nomeMes] = parseNumber(rows[i][c.colIndex]);
             });
 
             parsedData.sintomas.push({ sintoma: sintoma, meses: mesesValores });
           }
         }
 
-        // 4. ABA DESLIGAMENTOS
+        // ABA DESLIGAMENTOS
         else if (name.includes("DESLIGAMENTO")) {
           for (let i = 1; i < rows.length; i++) {
-            const r = rows[i];
-            const mes = String(r[0] || '').trim();
-            if (!mes) continue;
-            mesesSet.add(mes);
-
-            parsedData.desligamentos.push({
-              mes: mes,
-              quantidade: parseNumber(r[1]),
-              porcentagem: parseNumber(r[2])
-            });
+            const mes = String(rows[i][0] || '').trim().toUpperCase();
+            if (parsedData.listaMeses.includes(mes)) {
+              parsedData.desligamentos.push({
+                mes: mes,
+                quantidade: parseNumber(rows[i][1]),
+                porcentagem: parsePercentage(rows[i][2])
+              });
+            }
           }
         }
 
-        // 5. ABA TROCAS DE EQUIPAMENTOS
+        // ABA TROCAS DE EQUIPAMENTOS
         else if (name.includes("TROCA")) {
           for (let i = 1; i < rows.length; i++) {
-            const r = rows[i];
-            const mes = String(r[0] || '').trim();
-            if (!mes) continue;
-            mesesSet.add(mes);
-
-            parsedData.trocas.push({
-              mes: mes,
-              quantidade: parseNumber(r[1]),
-              porcentagem: parseNumber(r[2])
-            });
+            const mes = String(rows[i][0] || '').trim().toUpperCase();
+            if (parsedData.listaMeses.includes(mes)) {
+              parsedData.trocas.push({
+                mes: mes,
+                quantidade: parseNumber(rows[i][1]),
+                porcentagem: parsePercentage(rows[i][2])
+              });
+            }
           }
         }
 
-        // 6. ABA CENTRO DE CUSTOS
+        // ABA CENTRO DE CUSTOS
         else if (name.includes("CUSTO") || name.includes("CENTRO")) {
           for (let i = 1; i < rows.length; i++) {
-            const r = rows[i];
-            const mes = String(r[0] || '').trim();
-            if (!mes) continue;
-            mesesSet.add(mes);
-
-            parsedData.custos.push({
-              mes: mes,
-              chamados: parseNumber(r[1]),
-              faturamento: parseNumber(r[2]),
-              desconto: parseNumber(r[3]),
-              percDesconto: parseNumber(r[4]),
-              transpBruto: parseNumber(r[5]),
-              reembolsoTransp: parseNumber(r[6]),
-              transpReal: parseNumber(r[7]),
-              gastoAts: parseNumber(r[8]),
-              percGastoAts: parseNumber(r[9])
-            });
+            const mes = String(rows[i][0] || '').trim().toUpperCase();
+            if (parsedData.listaMeses.includes(mes)) {
+              parsedData.custos.push({
+                mes: mes,
+                chamados: parseNumber(rows[i][1]),
+                faturamento: parseNumber(rows[i][2]),
+                desconto: parseNumber(rows[i][3]),
+                percDesconto: parsePercentage(rows[i][4]),
+                transpBruto: parseNumber(rows[i][5]),
+                reembolsoTransp: parseNumber(rows[i][6]),
+                transpReal: parseNumber(rows[i][7]),
+                gastoAts: parseNumber(rows[i][8]),
+                percGastoAts: parsePercentage(rows[i][9])
+              });
+            }
           }
         }
       });
 
-      parsedData.listaMeses = Array.from(mesesSet);
       updateSelectPeriodos();
       updateAllDashboards();
     }
@@ -1055,7 +1052,6 @@
       }
       
       const isDark = document.body.classList.contains('dark-mode');
-      const textColor = isDark ? '#f5f5f7' : '#2b2c34';
       
       if (!config.options) config.options = {};
       config.options.responsive = true;
@@ -1082,7 +1078,11 @@
 
     /* ---------------- ABA 1: VISÃO GERAL ---------------- */
     function renderVisaoGeral() {
-      const meses = parsedData.listaMeses;
+      let meses = parsedData.listaMeses;
+      if (periodoSelecionado !== 'TODOS') {
+        meses = [periodoSelecionado];
+      }
+
       const totalChamadosMes = meses.map(m => {
         const item = parsedData.chamados.find(c => c.mes === m);
         return item ? item.chamados : 0;
@@ -1121,20 +1121,20 @@
       createChart('chartVGTransp', { type: 'bar', data: { labels: meses, datasets: [{ data: transp, backgroundColor: '#ef6c00' }] }, options: miniOpts });
       createChart('chartVGAt', { type: 'bar', data: { labels: meses, datasets: [{ data: at, backgroundColor: '#1565c0' }] }, options: miniOpts });
 
-      // Melhorou / Piorou
+      // O que Melhorou x O que Piorou
       document.getElementById('list-melhorou').innerHTML = `
-        <li class="performance-item"><span class="badge badge-success"><i class="fa-solid fa-arrow-up"></i> SLA</span> Cumprimento do SLA estabilizado em patamares elevados.</li>
-        <li class="performance-item"><span class="badge badge-success"><i class="fa-solid fa-arrow-down"></i> Custos</span> Controle no rebalanceamento dos reembolsos de transportadoras.</li>
+        <li class="performance-item"><span class="badge badge-success"><i class="fa-solid fa-arrow-up"></i> SLA</span> Cumprimento do SLA mantido em alto desempenho.</li>
+        <li class="performance-item"><span class="badge badge-success"><i class="fa-solid fa-arrow-down"></i> Custos</span> Controle otimizado no rebalanceamento dos reembolsos.</li>
       `;
 
       document.getElementById('list-piorou').innerHTML = `
-        <li class="performance-item"><span class="badge badge-danger"><i class="fa-solid fa-arrow-up"></i> Volume</span> Leve oscilação no volume do Top 1 Modelo Recorrente.</li>
-        <li class="performance-item"><span class="badge badge-danger"><i class="fa-solid fa-arrow-up"></i> Trocas</span> Aumento pontual em trocas operacionais em meses de maior faturamento.</li>
+        <li class="performance-item"><span class="badge badge-danger"><i class="fa-solid fa-arrow-up"></i> Volume</span> Leve variação pontual nos modelos mais recorrentes.</li>
+        <li class="performance-item"><span class="badge badge-danger"><i class="fa-solid fa-arrow-up"></i> Trocas</span> Acompanhar trocas preventivas em picos de chamados.</li>
       `;
 
       document.getElementById('diagnostico-estrategico').innerHTML = `
         <p style="font-size: 0.88rem; line-height: 1.5; color: var(--text-muted);">
-          O relatório demonstra boa saúde operacional. Recomenda-se acompanhamento direto do Top 5 Sintomas Recorrentes para estipular plano de manutenção preventiva junto aos parceiros logísticos e operacionais.
+          O relatório demonstra estabilidade operacional nos períodos analisados. Recomenda-se focar a atuação técnica no Top 5 Sintomas Recorrentes para otimizar os atendimentos de primeira resposta.
         </p>
       `;
     }
@@ -1348,16 +1348,14 @@
     /* ---------------- ABA 8: PONTOS DE ATENÇÃO ---------------- */
     function renderAtencao() {
       const container = document.getElementById('matriz-risco-container');
-      
-      // Análise em Tempo Real de Oscilação dos Custos e SLA
       let avisos = [];
 
-      parsedData.custos.forEach((c, idx) => {
+      parsedData.custos.forEach((c) => {
         if (c.percDesconto > 10) {
           avisos.push({
             nivel: 'high',
-            titulo: `Alto Desconto em ${c.mes}`,
-            desc: `O valor de desconto em ${c.mes} ultrapassou ${c.percDesconto}%. Avaliar causas de descumprimento operacional ou bonificações atípicas.`
+            titulo: `Desconto Acima da Média em ${c.mes}`,
+            desc: `O percentual de desconto atingiu ${c.percDesconto}%. Recomenda-se auditagem nos tickets desse período.`
           });
         }
       });
@@ -1365,8 +1363,8 @@
       if (avisos.length === 0) {
         avisos.push({
           nivel: 'medium',
-          titulo: 'Análise de Estabilidade Operacional',
-          desc: 'Nenhuma oscilação crítica de custos acima de 10% detectada no período analisado. Acompanhar a evolução contínua das trocas de equipamentos.'
+          titulo: 'Estabilidade da Operação',
+          desc: 'Os indicadores de custos e atendimento mantêm-se dentro dos limites normais de operação sem oscilações críticas de risco.'
         });
       }
 
