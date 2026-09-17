@@ -690,7 +690,7 @@
           <div id="modelos-container" class="dashboard-grid"></div>
         </section>
 
-        <!-- ABA 4: SINTOMAS -->
+        <!-- ABA 4: SINTOMAS (CORRIGIDO PARA O CONTAINER DINÂMICO) -->
         <section id="tab-sintomas" class="tab-content">
           <div id="sintomas-container" class="dashboard-grid"></div>
         </section>
@@ -842,7 +842,8 @@
     function parseComboCell(cellValue) {
       if (!cellValue) return null;
       const str = String(cellValue).trim();
-      if (!str || str.toUpperCase().includes("TOP 5") || str.toUpperCase().includes("POSIÇÃO")) return null;
+      const upper = str.toUpperCase();
+      if (!str || upper.includes("TOP 5") || upper.includes("POSIÇÃO") || upper.includes("RANKING")) return null;
 
       // Regex para extração inteligente: Nome - Valor (Porcentagem%)
       const match = str.match(/^(.+?)\s*[\-\–]\s*(\d+)\s*\((.*?)\%?\)$/);
@@ -958,7 +959,8 @@
         if (name.includes("MODELO")) {
           const header = rows[0].map(h => String(h || '').trim());
           header.forEach((nomeMes, colIdx) => {
-            if (colIdx > 0 && nomeMes && !nomeMes.toUpperCase().includes("RANKING") && !nomeMes.toUpperCase().includes("TOP")) {
+            const upperCol = nomeMes.toUpperCase();
+            if (colIdx > 0 && nomeMes && !upperCol.includes("RANKING") && !upperCol.includes("TOP")) {
               const modelosDoMes = [];
               for (let i = 1; i < rows.length; i++) {
                 const combo = parseComboCell(rows[i][colIdx]);
@@ -973,7 +975,8 @@
         else if (name.includes("SINTOMA")) {
           const header = rows[0].map(h => String(h || '').trim());
           header.forEach((nomeMes, colIdx) => {
-            if (colIdx > 0 && nomeMes && !nomeMes.toUpperCase().includes("RANKING") && !nomeMes.toUpperCase().includes("TOP")) {
+            const upperCol = nomeMes.toUpperCase();
+            if (colIdx > 0 && nomeMes && !upperCol.includes("RANKING") && !upperCol.includes("TOP")) {
               const sintomasDoMes = [];
               for (let i = 1; i < rows.length; i++) {
                 const combo = parseComboCell(rows[i][colIdx]);
@@ -1309,9 +1312,10 @@
       }
     }
 
-    /* ---------------- ABA 4: SINTOMAS (MESMO ESTILO DE MODELOS) ---------------- */
+    /* ---------------- ABA 4: SINTOMAS (COMPLETAMENTE CORRIGIDO) ---------------- */
     function renderSintomas() {
       const container = document.getElementById('sintomas-container');
+      if (!container) return;
       container.innerHTML = '';
 
       if (periodoSelecionado === 'TODOS') {
