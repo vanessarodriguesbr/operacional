@@ -8,7 +8,7 @@
   <!-- Fontes Google & Ícones FontAwesome -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   
   <!-- Chart.js + Plugin DataLabels + SheetJS (XLSX) -->
@@ -23,17 +23,18 @@
 
   <style>
     :root {
-      --bg-primary: #f4f5f9;
+      --bg-primary: #f8fafc;
       --bg-secondary: #ffffff;
       --bg-card: #ffffff;
-      --text-main: #2b2c34;
-      --text-muted: #626471;
-      --border-color: #e2e4ed;
+      --text-main: #0f172a;
+      --text-muted: #64748b;
+      --border-color: #cbd5e1;
       
-      --purple-primary: #4b0082;
-      --purple-hover: #3a0066;
-      --purple-light: #f0e6ff;
-      --purple-pastel: #dcd0ff;
+      /* PALETA VERDE ÁGUA / PETRÓLEO */
+      --purple-primary: #0f766e;            /* Verde Petróleo */
+      --purple-hover: #042f2e;      /* Verde Petróleo Escuro */
+      --purple-light: #ccfbf1;      /* Verde Água Claro */
+      --purple-pastel: #99f6e4;     /* Verde Água Pastel */
       
       --green-pastel: #e6f4ea;
       --green-text: #137333;
@@ -43,25 +44,33 @@
       --sidebar-width: 260px;
       --header-height: 70px;
       --transition-speed: 0.25s;
+
+      /* LOGO CORES (MODO CLARO) */
+      --logo-br: #50b7c1;
+      --logo-mobility: #0f172a;
     }
 
     body.dark-mode {
-      --bg-primary: #121214;
-      --bg-secondary: #1e1e24;
-      --bg-card: #25252d;
-      --text-main: #f5f5f7;
-      --text-muted: #a0a0b0;
-      --border-color: #383845;
+      --bg-primary: #0b131a;
+      --bg-secondary: #13222d;
+      --bg-card: #13222d;
+      --text-main: #f8fafc;
+      --text-muted: #94a3b8;
+      --border-color: #1e3a45;
       
-      --purple-primary: #8a2be2;
-      --purple-hover: #9d4edd;
-      --purple-light: #2d1b4e;
-      --purple-pastel: #4a287a;
+      --purple-primary: #14b8a6;    /* Verde Água Vibrante */
+      --purple-hover: #2dd4bf;
+      --purple-light: #042f2e;
+      --purple-pastel: #0d9488;
       
       --green-pastel: #1e3a2b;
       --green-text: #75b798;
       --red-pastel: #441c24;
       --red-text: #ea868f;
+
+      /* LOGO CORES (MODO ESCURO - TROCANDO A COR DE BRANCA PARA PRETA / OU BRANCA CONFORME SOLICITADO) */
+      --logo-br: #50b7c1;
+      --logo-mobility: #ffffff;
     }
 
     * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Inter', sans-serif; }
@@ -75,11 +84,17 @@
       transition: background-color var(--transition-speed), color var(--transition-speed);
     }
 
+    /* ESTILO SVG DA LOGO BRMOBILITY */
+    .logo-svg {
+      height: 32px;
+      width: auto;
+    }
+
     /* Modal / Tela de Login Inicial */
     .auth-overlay {
       position: fixed;
       top: 0; left: 0; width: 100vw; height: 100vh;
-      background: rgba(18, 18, 20, 0.85);
+      background: rgba(11, 19, 26, 0.85);
       backdrop-filter: blur(8px);
       display: flex;
       align-items: center;
@@ -106,15 +121,14 @@
 
     .auth-brand {
       display: flex;
+      flex-direction: column;
       align-items: center;
       justify-content: center;
       gap: 10px;
       margin-bottom: 20px;
     }
 
-    .auth-brand i { font-size: 2rem; color: var(--purple-primary); }
-    .auth-brand h2 { font-size: 1.2rem; font-weight: 800; color: var(--text-main); }
-    .auth-brand span { font-size: 0.75rem; color: var(--purple-primary); font-weight: 700; display: block; }
+    .auth-brand span { font-size: 0.75rem; color: var(--purple-primary); font-weight: 700; display: block; margin-top: 4px; }
 
     .auth-options { display: flex; flex-direction: column; gap: 12px; margin-top: 20px; }
 
@@ -194,8 +208,6 @@
       gap: 12px;
     }
 
-    .sidebar-brand i { font-size: 1.8rem; color: var(--purple-primary); }
-    .sidebar-brand-text h2 { font-size: 1rem; font-weight: 700; color: var(--text-main); line-height: 1.2; }
     .sidebar-brand-text span { font-size: 0.75rem; color: var(--purple-primary); font-weight: 600; }
 
     .sidebar-menu { list-style: none; padding: 15px 10px; flex-grow: 1; overflow-y: auto; }
@@ -236,7 +248,6 @@
     }
 
     .topbar-title h1 { font-size: 1.15rem; font-weight: 700; color: var(--text-main); }
-    .topbar-title p { font-size: 0.78rem; color: var(--purple-primary); font-weight: 600; }
     .topbar-actions { display: flex; align-items: center; gap: 15px; }
 
     .filter-group {
@@ -309,11 +320,12 @@
   <div class="auth-overlay" id="auth-modal">
     <div class="auth-card">
       <div class="auth-brand">
-        <i class="fa-solid fa-chart-line"></i>
-        <div>
-          <h2>RELATÓRIO OPERACIONAL</h2>
-          <span>BRMOBILITY</span>
-        </div>
+        <!-- LOGO VETORIAL NO MODAL -->
+        <svg class="logo-svg" viewBox="0 0 240 40" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <text x="0" y="32" font-family="'Inter', sans-serif" font-weight="900" font-size="34" fill="var(--logo-br)" letter-spacing="1">BR</text>
+          <text x="50" y="32" font-family="'Inter', sans-serif" font-weight="900" font-size="34" fill="var(--logo-mobility)" letter-spacing="1">MOBILITY</text>
+        </svg>
+        <span>RELATÓRIO OPERACIONAL</span>
       </div>
       <p style="font-size:0.85rem; color:var(--text-muted); margin-bottom:15px;">
         Selecione como deseja acessar a plataforma:
@@ -349,11 +361,11 @@
   <aside class="sidebar">
     <div>
       <div class="sidebar-brand">
-        <i class="fa-solid fa-chart-line"></i>
-        <div class="sidebar-brand-text">
-          <h2>RELATÓRIO</h2>
-          <span>BRMOBILITY</span>
-        </div>
+        <!-- LOGO VETORIAL NA SIDEBAR LATERAL -->
+        <svg class="logo-svg" viewBox="0 0 240 40" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <text x="0" y="32" font-family="'Inter', sans-serif" font-weight="900" font-size="34" fill="var(--logo-br)" letter-spacing="1">BR</text>
+          <text x="50" y="32" font-family="'Inter', sans-serif" font-weight="900" font-size="34" fill="var(--logo-mobility)" letter-spacing="1">MOBILITY</text>
+        </svg>
       </div>
       <ul class="sidebar-menu">
         <li class="active" data-tab="visao-geral"><a href="#"><i class="fa-solid fa-house"></i><span class="menu-text">Visão Geral</span></a></li>
@@ -391,7 +403,6 @@
     <header class="topbar">
       <div class="topbar-title">
         <h1>RELATÓRIO OPERACIONAL CONSOLIDADO</h1>
-        <p>BRMOBILITY</p>
       </div>
       <div class="topbar-actions">
         <div class="filter-group">
@@ -472,7 +483,7 @@
 
             <div class="col-3">
               <div class="card" style="padding:15px;">
-                <div style="font-size:0.75rem; font-weight:700; color:#8b5cf6; text-transform:uppercase; margin-bottom:10px;">
+                <div style="font-size:0.75rem; font-weight:700; color:#14b8a6; text-transform:uppercase; margin-bottom:10px;">
                   <i class="fa-solid fa-wrench"></i> GASTOS COM ATS
                 </div>
                 <div class="chart-container" style="min-height:150px;"><canvas id="chartVGAt"></canvas></div>
@@ -554,9 +565,9 @@
             </div>
 
             <div class="card col-12">
-              <div class="card-title" style="color: #8b5cf6; justify-content: flex-start;"><i class="fa-solid fa-wrench"></i> GASTOS COM AT (Valores por mês)</div>
+              <div class="card-title" style="color: #14b8a6; justify-content: flex-start;"><i class="fa-solid fa-wrench"></i> GASTOS COM AT (Valores por mês)</div>
               <div class="chart-container" style="min-height: 260px;"><canvas id="chartCustosAt"></canvas></div>
-              <div class="custos-total-box"><span class="custos-total-label">total acumulado</span><span class="custos-total-val" id="total-acumulado-at" style="color: #8b5cf6;">R$ 0,00</span></div>
+              <div class="custos-total-box"><span class="custos-total-label">total acumulado</span><span class="custos-total-val" id="total-acumulado-at" style="color: #14b8a6;">R$ 0,00</span></div>
             </div>
           </div>
 
@@ -654,8 +665,9 @@
     let chartInstances = {};
     let isAdmin = false;
 
-    const palette = ['#4f46e5', '#f97316', '#10b981', '#a855f7', '#ef4444', '#06b6d4', '#f59e0b'];
-    const colors = { purpleDark: '#4b0082', purpleMedium: '#6a1b9a', purpleLight: '#8e24aa', purplePastel: '#ab47bc' };
+    /* PALETA ATUALIZADA PARA O VERDE ÁGUA / PETRÓLEO */
+    const palette = ['#0f766e', '#14b8a6', '#0d9488', '#2dd4bf', '#042f2e', '#5eead4', '#99f6e4'];
+    const colors = { purpleDark: '#0f766e', purpleMedium: '#0d9488', purpleLight: '#14b8a6', purplePastel: '#2dd4bf' };
 
     // --- CONTROLE DE ACESSO E AUTENTICAÇÃO ---
     const authModal = document.getElementById('auth-modal');
@@ -958,8 +970,8 @@
       const ctx = el.getContext('2d');
 
       const isDark = document.body.classList.contains('dark-mode');
-      const trackColor = isDark ? '#2d2d38' : '#f0f2f7';
-      const textColor = isDark ? '#f5f5f7' : '#2b2c34';
+      const trackColor = isDark ? '#1e3a45' : '#f0f2f7';
+      const textColor = isDark ? '#f8fafc' : '#0f172a';
 
       const maxVal = Math.max(...dataValues, 1);
       const trackData = dataValues.map(() => maxVal);
@@ -987,7 +999,7 @@
       if (!el) return;
       const ctx = el.getContext('2d');
       const isDark = document.body.classList.contains('dark-mode');
-      const textColor = isDark ? '#a0a0b0' : '#626471';
+      const textColor = isDark ? '#94a3b8' : '#64748b';
 
       chartInstances[canvasId] = new Chart(ctx, {
         type: 'line',
@@ -1015,7 +1027,7 @@
       const totalChamadosMes = meses.map(m => (parsedData.chamados.find(c => c.mes === m)||{}).chamados||0);
       const slaMes = meses.map(m => (parsedData.chamados.find(c => c.mes === m)||{}).percAtendidosSla||0);
 
-      createPillChart('chartVGChamados', meses, totalChamadosMes, '#4f46e5', (v) => v, 13);
+      createPillChart('chartVGChamados', meses, totalChamadosMes, '#0f766e', (v) => v, 13);
       const slaColors = slaMes.map(v => v >= 80 ? '#10b981' : (v >= 70 ? '#f97316' : '#ef4444'));
       createPillChart('chartVGSla', meses, slaMes, slaColors, (v) => `${v}%`, 13);
 
@@ -1026,7 +1038,7 @@
 
       createSparklineChart('chartVGFat', meses, desc, '#ef4444', 'rgba(239, 68, 68, 0.1)');
       createSparklineChart('chartVGTransp', meses, transp, '#f97316', 'rgba(249, 115, 22, 0.1)');
-      createSparklineChart('chartVGAt', meses, at, '#8b5cf6', 'rgba(139, 92, 246, 0.1)');
+      createSparklineChart('chartVGAt', meses, at, '#14b8a6', 'rgba(20, 184, 166, 0.1)');
       createSparklineChart('chartVGDesc', meses, slaTotal, '#10b981', 'rgba(16, 185, 129, 0.1)');
     }
 
@@ -1166,7 +1178,7 @@
 
         createPillChart('chartCustosDesc', meses, desc, '#ef4444', (v) => formatBRL(v), 12);
         createPillChart('chartCustosTransp', meses, transp, '#f97316', (v) => formatBRL(v), 12);
-        createPillChart('chartCustosAt', meses, at, '#8b5cf6', (v) => formatBRL(v), 12);
+        createPillChart('chartCustosAt', meses, at, '#14b8a6', (v) => formatBRL(v), 12);
 
         const elDesc = document.getElementById('total-acumulado-desc');
         const elTransp = document.getElementById('total-acumulado-transp');
@@ -1177,7 +1189,7 @@
         if (elAt) elAt.innerText = formatBRL(at.reduce((a,c)=>a+c, 0));
 
         parsedData.custos.forEach(c => {
-          tbody.innerHTML += `<tr><td><strong>${c.mes}</strong></td><td>${formatBRL(c.faturamento)}</td><td style="color: #ef4444; font-weight: 600;">${formatBRL(c.desconto)}</td><td>${formatBRL(c.transpBruto)}</td><td>${formatBRL(c.reembolsoTransp)}</td><td style="color: #f97316; font-weight: 600;">${formatBRL(c.transpReal)}</td><td style="color: #8b5cf6; font-weight: 600;">${formatBRL(c.gastoAts)}</td></tr>`;
+          tbody.innerHTML += `<tr><td><strong>${c.mes}</strong></td><td>${formatBRL(c.faturamento)}</td><td style="color: #ef4444; font-weight: 600;">${formatBRL(c.desconto)}</td><td>${formatBRL(c.transpBruto)}</td><td>${formatBRL(c.reembolsoTransp)}</td><td style="color: #f97316; font-weight: 600;">${formatBRL(c.transpReal)}</td><td style="color: #14b8a6; font-weight: 600;">${formatBRL(c.gastoAts)}</td></tr>`;
         });
       } else {
         if (kpisContainer) kpisContainer.style.display = 'flex';
@@ -1195,7 +1207,7 @@
         if (elAt) elAt.innerText = formatBRL(item.gastoAts||0);
 
         if (item.mes) {
-          tbody.innerHTML = `<tr><td><strong>${item.mes}</strong></td><td>${formatBRL(item.faturamento)}</td><td style="color: #ef4444; font-weight: 600;">${formatBRL(item.desconto)}</td><td>${formatBRL(item.transpBruto)}</td><td>${formatBRL(item.reembolsoTransp)}</td><td style="color: #f97316; font-weight: 600;">${formatBRL(item.transpReal)}</td><td style="color: #8b5cf6; font-weight: 600;">${formatBRL(item.gastoAts)}</td></tr>`;
+          tbody.innerHTML = `<tr><td><strong>${item.mes}</strong></td><td>${formatBRL(item.faturamento)}</td><td style="color: #ef4444; font-weight: 600;">${formatBRL(item.desconto)}</td><td>${formatBRL(item.transpBruto)}</td><td>${formatBRL(item.reembolsoTransp)}</td><td style="color: #f97316; font-weight: 600;">${formatBRL(item.transpReal)}</td><td style="color: #14b8a6; font-weight: 600;">${formatBRL(item.gastoAts)}</td></tr>`;
         }
       }
     }
