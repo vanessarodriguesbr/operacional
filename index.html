@@ -830,7 +830,6 @@
       return isNaN(num) ? 0 : num;
     }
 
-    // Porcentagens tratadas (Ex: 0.95 vira 95)
     function parsePercentage(val) {
       let n = parseNumber(val);
       if (n > 0 && n <= 1) {
@@ -895,19 +894,19 @@
       reader.readAsArrayBuffer(file);
     });
 
-    // PROCESSAMENTO FILTRADO DE DADOS
+    // PROCESSAMENTO DE ACORDO COM AS COLUNAS DA PLANILHA
     function processExcel(workbook) {
       parsedData = { chamados: [], modelos: [], sintomas: [], desligamentos: [], trocas: [], custos: [], listaMeses: [] };
       const mesesValidosSet = new Set();
 
-      // 1. PRIMEIRA PASSAGEM: Ler a aba CHAMADOS para definir os MESES MESTRES da empresa
+      // 1. ABA CHAMADOS (Captura a lista principal de Meses)
       workbook.SheetNames.forEach(sheetName => {
         if (sheetName.trim().toUpperCase().includes("CHAMADO")) {
           const sheet = workbook.Sheets[sheetName];
           const rows = XLSX.utils.sheet_to_json(sheet, { header: 1, defval: "" });
           for (let i = 1; i < rows.length; i++) {
-            const mes = String(rows[i][0] || '').trim().toUpperCase();
-            if (mes && !mes.includes("TOTAL")) {
+            const mes = String(rows[i][0] || '').trim();
+            if (mes && !mes.toUpperCase().includes("TOTAL")) {
               mesesValidosSet.add(mes);
               parsedData.chamados.push({
                 mes: mes,
@@ -924,7 +923,7 @@
 
       parsedData.listaMeses = Array.from(mesesValidosSet);
 
-      // 2. SEGUNDA PASSAGEM: Ler as demais abas filtrando estritamente pelos meses mestres
+      // 2. PROCESSAMENTO DAS OUTRAS ABAS
       workbook.SheetNames.forEach(sheetName => {
         const name = sheetName.trim().toUpperCase();
         const sheet = workbook.Sheets[sheetName];
@@ -933,11 +932,11 @@
 
         // ABA MODELOS
         if (name.includes("MODELO")) {
-          const header = rows[0].map(h => String(h || '').trim().toUpperCase());
+          const header = rows[0].map(h => String(h || '').trim());
           const colunasValidas = [];
 
           header.forEach((h, colIdx) => {
-            if (colIdx > 0 && parsedData.listaMeses.includes(h)) {
+            if (colIdx > 0 && h && !h.toUpperCase().includes("TOTAL")) {
               colunasValidas.push({ colIndex: colIdx, nomeMes: h });
             }
           });
@@ -957,11 +956,11 @@
 
         // ABA SINTOMAS
         else if (name.includes("SINTOMA")) {
-          const header = rows[0].map(h => String(h || '').trim().toUpperCase());
+          const header = rows[0].map(h => String(h || '').trim());
           const colunasValidas = [];
 
           header.forEach((h, colIdx) => {
-            if (colIdx > 0 && parsedData.listaMeses.includes(h)) {
+            if (colIdx > 0 && h && !h.toUpperCase().includes("TOTAL")) {
               colunasValidas.push({ colIndex: colIdx, nomeMes: h });
             }
           });
@@ -982,8 +981,8 @@
         // ABA DESLIGAMENTOS
         else if (name.includes("DESLIGAMENTO")) {
           for (let i = 1; i < rows.length; i++) {
-            const mes = String(rows[i][0] || '').trim().toUpperCase();
-            if (parsedData.listaMeses.includes(mes)) {
+            const mes = String(rows[i][0] || '').trim();
+            if (mes && !mes.toUpperCase().includes("TOTAL")) {
               parsedData.desligamentos.push({
                 mes: mes,
                 quantidade: parseNumber(rows[i][1]),
@@ -996,8 +995,8 @@
         // ABA TROCAS DE EQUIPAMENTOS
         else if (name.includes("TROCA")) {
           for (let i = 1; i < rows.length; i++) {
-            const mes = String(rows[i][0] || '').trim().toUpperCase();
-            if (parsedData.listaMeses.includes(mes)) {
+            const mes = String(rows[i][0] || '').trim();
+            if (mes && !mes.toUpperCase().includes("TOTAL")) {
               parsedData.trocas.push({
                 mes: mes,
                 quantidade: parseNumber(rows[i][1]),
@@ -1010,8 +1009,8 @@
         // ABA CENTRO DE CUSTOS
         else if (name.includes("CUSTO") || name.includes("CENTRO")) {
           for (let i = 1; i < rows.length; i++) {
-            const mes = String(rows[i][0] || '').trim().toUpperCase();
-            if (parsedData.listaMeses.includes(mes)) {
+            const mes = String(rows[i][0] || '').trim();
+            if (mes && !mes.toUpperCase().includes("TOTAL")) {
               parsedData.custos.push({
                 mes: mes,
                 chamados: parseNumber(rows[i][1]),
@@ -1050,8 +1049,6 @@
       if (chartInstances[canvasId]) {
         chartInstances[canvasId].destroy();
       }
-      
-      const isDark = document.body.classList.contains('dark-mode');
       
       if (!config.options) config.options = {};
       config.options.responsive = true;
@@ -1108,7 +1105,7 @@
         }
       });
 
-      // Custos Mini
+      // Mini Gráficos de Custos
       const fat = meses.map(m => (parsedData.custos.find(c=>c.mes===m)||{}).faturamento||0);
       const desc = meses.map(m => (parsedData.custos.find(c=>c.mes===m)||{}).desconto||0);
       const transp = meses.map(m => (parsedData.custos.find(c=>c.mes===m)||{}).transpReal||0);
@@ -1128,8 +1125,8 @@
       `;
 
       document.getElementById('list-piorou').innerHTML = `
-        <li class="performance-item"><span class="badge badge-danger"><i class="fa-solid fa-arrow-up"></i> Volume</span> Leve variação pontual nos modelos mais recorrentes.</li>
-        <li class="performance-item"><span class="badge badge-danger"><i class="fa-solid fa-arrow-up"></i> Trocas</span> Acompanhar trocas preventivas em picos de chamados.</li>
+        <li class="performance-item"><span class="badge badge-danger"><i class="fa-solid fa-arrow-up"></i> Volume</span> Variação pontual em modelos reincidentes.</li>
+        <li class="performance-item"><span class="badge badge-danger"><i class="fa-solid fa-arrow-up"></i> Trocas</span> Acompanhar trocas preventivas em picos de demanda.</li>
       `;
 
       document.getElementById('diagnostico-estrategico').innerHTML = `
@@ -1261,7 +1258,7 @@
       });
     }
 
-    /* ---------------- ABA 6: TROCAS ---------------- */
+    /* ---------------- ABA 6: TROCAS DE EQUIPAMENTOS ---------------- */
     function renderTrocas() {
       let data = parsedData.trocas;
       if (periodoSelecionado !== 'TODOS') {
