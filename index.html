@@ -691,7 +691,7 @@
           </div>
         </section>
 
-        <!-- ABA 2: CHAMADOS (COM TABELA DE VALORES TOTAIS) -->
+        <!-- ABA 2: CHAMADOS -->
         <section id="tab-chamados" class="tab-content">
           <div class="dashboard-grid">
             <div class="card col-4">
@@ -739,7 +739,7 @@
           <div id="sintomas-container" class="dashboard-grid"></div>
         </section>
 
-        <!-- ABA 5: DESLIGAMENTOS (COM GRÁFICO DE QUANTIDADE E PORCENTAGEM) -->
+        <!-- ABA 5: DESLIGAMENTOS -->
         <section id="tab-desligamentos" class="tab-content">
           <div class="dashboard-grid">
             <div class="card col-12">
@@ -753,7 +753,7 @@
           </div>
         </section>
 
-        <!-- ABA 6: TROCAS DE EQUIPAMENTOS (COM GRÁFICO DE QUANTIDADE E PORCENTAGEM) -->
+        <!-- ABA 6: TROCAS DE EQUIPAMENTOS -->
         <section id="tab-trocas" class="tab-content">
           <div class="dashboard-grid">
             <div class="card col-12">
@@ -767,7 +767,7 @@
           </div>
         </section>
 
-        <!-- ABA 7: CENTRO DE CUSTOS (TITULOS À ESQUERDA + TABELA COMPLETA COM 7 COLUNAS) -->
+        <!-- ABA 7: CENTRO DE CUSTOS (CORREÇÃO MAPEAMENTO EXATO DE COLUNAS) -->
         <section id="tab-custos" class="tab-content">
           <div class="dashboard-grid" id="custos-kpis" style="display:none;">
             <div class="col-3"><div class="kpi-card"><span class="kpi-title">Faturamento</span><span class="kpi-value" id="kpi-fat">R$ 0</span></div></div>
@@ -790,7 +790,7 @@
 
             <div class="card col-12">
               <div class="card-title" style="color: #f97316; justify-content: flex-start;">
-                <i class="fa-solid fa-truck"></i> GASTOS TRANSPORTADORAS (Valores por mês)
+                <i class="fa-solid fa-truck"></i> GASTOS TRANSPORTADORA (Valores por mês)
               </div>
               <div class="chart-container" style="min-height: 260px;"><canvas id="chartCustosTransp"></canvas></div>
               <div class="custos-total-box">
@@ -1088,22 +1088,40 @@
           }
         }
 
-        // ABA CENTRO DE CUSTOS (MAPEAMENTO REFORÇADO DA COLUNA I PARA TRANSP. REAL)
+        // ABA CENTRO DE CUSTOS (MAPEAMENTO DINÂMICO BASEADO NO SEU PRINT REAL)
         else if (name.includes("CUSTO") || name.includes("CENTRO")) {
+          const header = rows[0].map(h => String(h || '').trim().toUpperCase());
+          
+          let idxMes = 0;
+          let idxFat = 1;
+          let idxDesc = 2;
+          let idxBruto = 3;
+          let idxReemb = 4;
+          let idxReal = 5;
+          let idxAts = 6;
+
+          // Busca pelas colunas reais caso haja cabeçalhos específicos
+          header.forEach((h, colIdx) => {
+            if (h.includes("FATURAMENTO")) idxFat = colIdx;
+            else if (h.includes("DESCONTO")) idxDesc = colIdx;
+            else if (h.includes("BRUTO")) idxBruto = colIdx;
+            else if (h.includes("REEMBOLSO")) idxReemb = colIdx;
+            else if (h.includes("REAL")) idxReal = colIdx;
+            else if (h.includes("ATS") || h.includes("AT")) idxAts = colIdx;
+          });
+
           for (let i = 1; i < rows.length; i++) {
-            const mes = String(rows[i][0] || '').trim();
+            const r = rows[i];
+            const mes = String(r[idxMes] || '').trim();
             if (mes && !mes.toUpperCase().includes("TOTAL")) {
               parsedData.custos.push({
                 mes: mes,
-                chamados: parseNumber(rows[i][1]),
-                faturamento: parseNumber(rows[i][2]),
-                desconto: parseNumber(rows[i][3]),
-                percDesconto: parsePercentage(rows[i][4]),
-                transpBruto: parseNumber(rows[i][5]),
-                reembolsoTransp: parseNumber(rows[i][6]),
-                transpReal: parseNumber(rows[i][7]), // Puxa do Gasto Transportadora Real
-                gastoAts: parseNumber(rows[i][8]),
-                percGastoAts: parsePercentage(rows[i][9])
+                faturamento: parseNumber(r[idxFat]),
+                desconto: parseNumber(r[idxDesc]),
+                transpBruto: parseNumber(r[idxBruto]),
+                reembolsoTransp: parseNumber(r[idxReemb]),
+                transpReal: parseNumber(r[idxReal]),
+                gastoAts: parseNumber(r[idxAts])
               });
             }
           }
@@ -1127,7 +1145,7 @@
       updateAllDashboards();
     });
 
-    // CRIAÇÃO DE BARRAS ARREDONDADAS COM FONTE LEVEMENTE AUMENTADA
+    // BARRAS ARREDONDADAS
     function createPillChart(canvasId, labels, dataValues, bgColors, datalabelFormatter, fontSize = 13) {
       if (chartInstances[canvasId]) {
         chartInstances[canvasId].destroy();
@@ -1190,7 +1208,7 @@
             x: {
               display: false,
               grid: { display: false },
-              max: maxVal * 1.22
+              max: maxVal * 1.25
             },
             y: {
               grid: { display: false },
@@ -1254,7 +1272,6 @@
       createPillChart('chartVGChamados', meses, totalChamadosMes, colors.purpleDark, (v) => v, 13);
       createPillChart('chartVGSla', meses, slaMes, colors.purpleMedium, (v) => `${v}%`, 13);
 
-      // Mini Gráficos de Custos
       const fat = meses.map(m => (parsedData.custos.find(c=>c.mes===m)||{}).faturamento||0);
       const desc = meses.map(m => (parsedData.custos.find(c=>c.mes===m)||{}).desconto||0);
       const transp = meses.map(m => (parsedData.custos.find(c=>c.mes===m)||{}).transpReal||0);
@@ -1284,7 +1301,7 @@
       `;
     }
 
-    /* ---------------- ABA 2: CHAMADOS (AUMENTO DE FONTE + TABELA COMPLETA) ---------------- */
+    /* ---------------- ABA 2: CHAMADOS ---------------- */
     function renderChamados() {
       let chamadosSub = parsedData.chamados;
       if (periodoSelecionado !== 'TODOS') {
@@ -1298,12 +1315,10 @@
       const valSla = chamadosSub.map(c => c.atendidosSla);
       const percSlaList = chamadosSub.map(c => c.percAtendidosSla);
 
-      // Renderização com Fonte Aumentada (13px)
       createPillChart('chartChamadosTotal', labelsMeses, valTotal, colors.purpleDark, (v) => v, 13);
       createPillChart('chartChamadosAtendidos', labelsMeses, valAtendidos, colors.purpleMedium, (v, ctx) => `${v} (${percAtendidosList[ctx.dataIndex]}%)`, 13);
       createPillChart('chartChamadosSla', labelsMeses, valSla, colors.purplePastel, (v, ctx) => `${v} (${percSlaList[ctx.dataIndex]}%)`, 13);
 
-      // Preenchimento da Tabela Consolidada de Chamados
       const tbody = document.getElementById('chamados-table-body');
       tbody.innerHTML = '';
       chamadosSub.forEach(c => {
@@ -1320,7 +1335,7 @@
       });
     }
 
-    /* ---------------- ABA 3: MODELOS (FONTE AUMENTADA) ---------------- */
+    /* ---------------- ABA 3: MODELOS ---------------- */
     function renderModelos() {
       const container = document.getElementById('modelos-container');
       if (!container) return;
@@ -1416,7 +1431,7 @@
       }
     }
 
-    /* ---------------- ABA 4: SINTOMAS (FONTE AUMENTADA) ---------------- */
+    /* ---------------- ABA 4: SINTOMAS ---------------- */
     function renderSintomas() {
       const container = document.getElementById('sintomas-container');
       if (!container) return;
@@ -1512,7 +1527,7 @@
       }
     }
 
-    /* ---------------- ABA 5: DESLIGAMENTOS (QUANTIDADE E PORCENTAGEM) ---------------- */
+    /* ---------------- ABA 5: DESLIGAMENTOS ---------------- */
     function renderDesligamentos() {
       let data = parsedData.desligamentos;
       if (periodoSelecionado !== 'TODOS') {
@@ -1527,7 +1542,7 @@
       createPillChart('chartDesligamentosPerc', labels, valuesPerc, colors.purpleMedium, (v) => `${v}%`, 13);
     }
 
-    /* ---------------- ABA 6: TROCAS DE EQUIPAMENTOS (QUANTIDADE E PORCENTAGEM) ---------------- */
+    /* ---------------- ABA 6: TROCAS DE EQUIPAMENTOS ---------------- */
     function renderTrocas() {
       let data = parsedData.trocas;
       if (periodoSelecionado !== 'TODOS') {
@@ -1542,7 +1557,7 @@
       createPillChart('chartTrocasPerc', labels, valuesPerc, colors.purplePastel, (v) => `${v}%`, 13);
     }
 
-    /* ---------------- ABA 7: CENTRO DE CUSTOS (TITULOS À ESQUERDA + TODAS AS COLUNAS) ---------------- */
+    /* ---------------- ABA 7: CENTRO DE CUSTOS (MAPEAMENTO EXATO REFORÇADO) ---------------- */
     function renderCustos() {
       const kpisContainer = document.getElementById('custos-kpis');
       const chartsContainer = document.getElementById('custos-charts-container');
@@ -1570,7 +1585,7 @@
         document.getElementById('total-acumulado-transp').innerText = formatBRL(sumTransp);
         document.getElementById('total-acumulado-at').innerText = formatBRL(sumAt);
 
-        // Preenchimento da Tabela Completa (Com todas as colunas da planilha)
+        // Preenchimento da Tabela Completa do Centro de Custos
         parsedData.custos.forEach(c => {
           tbody.innerHTML += `
             <tr>
@@ -1618,11 +1633,11 @@
       let avisos = [];
 
       parsedData.custos.forEach((c) => {
-        if (c.percDesconto > 10) {
+        if (c.desconto > 5000) {
           avisos.push({
             nivel: 'high',
-            titulo: `Desconto Acima da Média em ${c.mes}`,
-            desc: `O percentual de desconto atingiu ${c.percDesconto}%. Recomenda-se auditagem nos tickets desse período.`
+            titulo: `Desconto Elevado em ${c.mes}`,
+            desc: `O valor total de descontos atingiu ${formatBRL(c.desconto)}. Recomenda-se auditagem nos tickets desse período.`
           });
         }
       });
