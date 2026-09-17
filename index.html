@@ -420,47 +420,73 @@
         <!-- ABA 1: VISÃO GERAL -->
         <section id="tab-visao-geral" class="tab-content active">
           <div class="dashboard-grid">
+            
+            <!-- BLOCOS SUPERIORES: COMPARATIVO MENSAL DE CHAMADOS E SLA -->
             <div class="card col-12">
-              <div style="font-weight:700; font-size:1rem; margin-bottom:15px; color:var(--text-main);">Comparativo Mensal — Chamados e SLA</div>
-              <div style="font-size:0.75rem; font-weight:700; text-transform:uppercase; color:var(--text-muted); margin-bottom:8px;">TOTAL DE CHAMADOS</div>
-              <div class="chart-container" style="min-height:220px; margin-bottom:20px;"><canvas id="chartVGChamados"></canvas></div>
+              <div style="font-weight:700; font-size:1rem; margin-bottom:15px; color:var(--text-main);">
+                Comparativo Mensal — Chamados e SLA
+              </div>
+              <div style="font-size:0.75rem; font-weight:700; text-transform:uppercase; color:var(--text-muted); margin-bottom:8px;">
+                TOTAL DE CHAMADOS
+              </div>
+              <div class="chart-container" style="min-height:220px; margin-bottom:20px;">
+                <canvas id="chartVGChamados"></canvas>
+              </div>
 
-              <div style="font-size:0.75rem; font-weight:700; text-transform:uppercase; color:var(--text-muted); margin-bottom:8px;">SLA CUMPRIDO (%)</div>
-              <div class="chart-container" style="min-height:220px;"><canvas id="chartVGSla"></canvas></div>
+              <div style="font-size:0.75rem; font-weight:700; text-transform:uppercase; color:var(--text-muted); margin-bottom:8px;">
+                SLA CUMPRIDO (%)
+              </div>
+              <div class="chart-container" style="min-height:220px;">
+                <canvas id="chartVGSla"></canvas>
+              </div>
             </div>
 
+            <!-- EVOLUÇÃO DE CUSTOS OPERACIONAIS (4 MINI SPARKLINES) -->
             <div class="col-12" style="margin-top:10px;">
-              <div style="font-weight:700; font-size:1rem; color:var(--text-main); margin-bottom:2px;">Evolução de Custos Operacionais</div>
-              <div style="font-size:0.78rem; color:var(--text-muted); margin-bottom:15px;">Passe o mouse sobre os pontos do gráfico para ver a evolução mês a mês.</div>
+              <div style="font-weight:700; font-size:1rem; color:var(--text-main); margin-bottom:2px;">
+                Evolução de Custos Operacionais
+              </div>
+              <div style="font-size:0.78rem; color:var(--text-muted); margin-bottom:15px;">
+                Passe o mouse sobre os pontos do gráfico para ver a evolução mês a mês.
+              </div>
             </div>
 
             <div class="col-3">
               <div class="card" style="padding:15px;">
-                <div style="font-size:0.75rem; font-weight:700; color:#ef4444; text-transform:uppercase; margin-bottom:10px;"><i class="fa-solid fa-tag"></i> DESCONTOS</div>
+                <div style="font-size:0.75rem; font-weight:700; color:#ef4444; text-transform:uppercase; margin-bottom:10px;">
+                  <i class="fa-solid fa-tag"></i> DESCONTOS
+                </div>
                 <div class="chart-container" style="min-height:150px;"><canvas id="chartVGFat"></canvas></div>
               </div>
             </div>
 
             <div class="col-3">
               <div class="card" style="padding:15px;">
-                <div style="font-size:0.75rem; font-weight:700; color:#f97316; text-transform:uppercase; margin-bottom:10px;"><i class="fa-solid fa-truck"></i> GASTOS COM TRANSPORTADORA</div>
+                <div style="font-size:0.75rem; font-weight:700; color:#f97316; text-transform:uppercase; margin-bottom:10px;">
+                  <i class="fa-solid fa-truck"></i> GASTOS COM TRANSPORTADORA
+                </div>
                 <div class="chart-container" style="min-height:150px;"><canvas id="chartVGTransp"></canvas></div>
               </div>
             </div>
 
             <div class="col-3">
               <div class="card" style="padding:15px;">
-                <div style="font-size:0.75rem; font-weight:700; color:#8b5cf6; text-transform:uppercase; margin-bottom:10px;"><i class="fa-solid fa-wrench"></i> GASTOS COM ATS</div>
+                <div style="font-size:0.75rem; font-weight:700; color:#8b5cf6; text-transform:uppercase; margin-bottom:10px;">
+                  <i class="fa-solid fa-wrench"></i> GASTOS COM ATS
+                </div>
                 <div class="chart-container" style="min-height:150px;"><canvas id="chartVGAt"></canvas></div>
               </div>
             </div>
 
             <div class="col-3">
               <div class="card" style="padding:15px;">
-                <div style="font-size:0.75rem; font-weight:700; color:#10b981; text-transform:uppercase; margin-bottom:10px;"><i class="fa-solid fa-check-double"></i> CHAMADOS NO SLA</div>
+                <div style="font-size:0.75rem; font-weight:700; color:#10b981; text-transform:uppercase; margin-bottom:10px;">
+                  <i class="fa-solid fa-check-double"></i> CHAMADOS NO SLA
+                </div>
                 <div class="chart-container" style="min-height:150px;"><canvas id="chartVGDesc"></canvas></div>
               </div>
             </div>
+
           </div>
         </section>
 
@@ -560,7 +586,7 @@
 
   <script>
     // =========================================================================
-    // CONFIGURAÇÃO DO FIREBASE (INSIRA SUAS CREDENCIAIS ABAIXO)
+    // CONFIGURAÇÃO DO FIREBASE
     // =========================================================================
     const firebaseConfig = {
       apiKey: "AIzaSyAxyek1TdbO6rGdFocRdgMANlHRs9Le49E",
@@ -670,7 +696,7 @@
 
     initFirestoreListener();
 
-    // --- UPLOAD E SALVAMENTO NO FIRESTORE (SOBRESCREVE DADOS ANTIGOS) ---
+    // --- UPLOAD E SALVAMENTO NO FIRESTORE ---
     const fileInput = document.getElementById('file-input');
     btnUploadHeader.addEventListener('click', () => fileInput.click());
 
@@ -694,7 +720,6 @@
           const now = new Date();
           const timeStr = `${now.toLocaleDateString()} ${now.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}`;
 
-          // Salva no Firestore substituindo o documento completo
           db.collection('relatorio_operacional').doc('dados_consolidados').set({
             payload: parsedData,
             lastUpdated: timeStr,
