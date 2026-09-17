@@ -396,6 +396,42 @@
       min-height: 280px;
     }
 
+    /* Estilos Específicos para os Cards da Visão Geral (Referência do Print) */
+    .card-melhorou {
+      background-color: #f0fdf4;
+      border: 1px solid #bbf7d0;
+    }
+    body.dark-mode .card-melhorou {
+      background-color: #052e16;
+      border-color: #14532d;
+    }
+
+    .card-piorou {
+      background-color: #fef2f2;
+      border: 1px solid #fecaca;
+    }
+    body.dark-mode .card-piorou {
+      background-color: #450a0a;
+      border-color: #7f1d1d;
+    }
+
+    .diag-item {
+      border-left: 3px solid var(--purple-primary);
+      padding-left: 12px;
+      margin-bottom: 14px;
+    }
+    .diag-item h4 {
+      font-size: 0.88rem;
+      font-weight: 700;
+      color: var(--text-main);
+      margin-bottom: 2px;
+    }
+    .diag-item p {
+      font-size: 0.8rem;
+      color: var(--text-muted);
+      line-height: 1.4;
+    }
+
     /* Total Acumulado Box na aba Custos */
     .custos-total-box {
       margin-top: 15px;
@@ -523,17 +559,12 @@
     .badge-danger  { background-color: var(--red-pastel); color: var(--red-text); }
 
     .performance-list {
-      list-style: none;
+      list-style: disc;
+      padding-left: 20px;
       display: flex;
       flex-direction: column;
-      gap: 10px;
-    }
-
-    .performance-item {
-      display: flex;
-      align-items: flex-start;
-      gap: 10px;
-      font-size: 0.85rem;
+      gap: 6px;
+      font-size: 0.82rem;
       line-height: 1.4;
     }
 
@@ -652,42 +683,119 @@
 
       <div id="dashboard-content" style="display: none;">
 
-        <!-- ABA 1: VISÃO GERAL -->
+        <!-- ABA 1: VISÃO GERAL (DESIGNING CONFORME PRINT DE REFERÊNCIA) -->
         <section id="tab-visao-geral" class="tab-content active">
           <div class="dashboard-grid">
-            <div class="card col-6">
-              <div class="card-title"><i class="fa-solid fa-chart-bar"></i> Volume de Chamados Mês a Mês</div>
-              <div class="chart-container"><canvas id="chartVGChamados"></canvas></div>
-            </div>
-            <div class="card col-6">
-              <div class="card-title"><i class="fa-solid fa-chart-line"></i> SLA Cumprido Mês a Mês (%)</div>
-              <div class="chart-container"><canvas id="chartVGSla"></canvas></div>
-            </div>
-
+            
+            <!-- BLOCOS SUPERIORES DE CHAMADOS E SLA -->
             <div class="card col-12">
-              <div class="card-title"><i class="fa-solid fa-dollar-sign"></i> Evolução de Custos Operacionais</div>
-              <div class="dashboard-grid" style="margin-bottom:0;">
-                <div class="col-3"><div class="chart-container" style="min-height:180px;"><canvas id="chartVGFat"></canvas></div></div>
-                <div class="col-3"><div class="chart-container" style="min-height:180px;"><canvas id="chartVGDesc"></canvas></div></div>
-                <div class="col-3"><div class="chart-container" style="min-height:180px;"><canvas id="chartVGTransp"></canvas></div></div>
-                <div class="col-3"><div class="chart-container" style="min-height:180px;"><canvas id="chartVGAt"></canvas></div></div>
+              <div style="font-size: 0.95rem; font-weight: 700; color: var(--text-main); margin-bottom: 20px;">
+                Comparativo Mensal — Chamados e SLA
+              </div>
+
+              <!-- 1. TOTAL DE CHAMADOS -->
+              <div style="font-size: 0.75rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase; margin-bottom: 10px;">
+                TOTAL DE CHAMADOS
+              </div>
+              <div class="chart-container" style="min-height: 220px; margin-bottom: 25px;">
+                <canvas id="chartVGChamados"></canvas>
+              </div>
+
+              <!-- 2. SLA CUMPRIDO (%) -->
+              <div style="font-size: 0.75rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase; margin-bottom: 10px;">
+                SLA CUMPRIDO (%)
+              </div>
+              <div class="chart-container" style="min-height: 220px;">
+                <canvas id="chartVGSla"></canvas>
               </div>
             </div>
 
-            <div class="card col-6">
-              <div class="card-title" style="color:var(--green-text);"><i class="fa-solid fa-circle-check"></i> O que Melhorou</div>
-              <ul class="performance-list" id="list-melhorou"></ul>
-            </div>
-
-            <div class="card col-6">
-              <div class="card-title" style="color:var(--red-text);"><i class="fa-solid fa-circle-xmark"></i> O que Piorou</div>
-              <ul class="performance-list" id="list-piorou"></ul>
-            </div>
-
+            <!-- BLOCOS CENTRAIS: EVOLUÇÃO DE CUSTOS OPERACIONAIS (4 MINI SPARKLINE CHARTS) -->
             <div class="card col-12">
-              <div class="card-title"><i class="fa-solid fa-compass"></i> Diagnóstico Estratégico & Plano de Ação</div>
-              <div id="diagnostico-estrategico"></div>
+              <div style="font-size: 0.95rem; font-weight: 700; color: var(--text-main); margin-bottom: 4px;">
+                Evolução de Custos Operacionais
+              </div>
+              <div style="font-size: 0.78rem; color: var(--text-muted); margin-bottom: 20px;">
+                Passe o mouse sobre os pontos do gráfico para ver o detalhamento do mês.
+              </div>
+
+              <div class="dashboard-grid" style="margin-bottom: 0;">
+                <div class="col-3">
+                  <div style="font-size: 0.72rem; font-weight: 700; color: #ef4444; text-transform: uppercase; margin-bottom: 8px;">
+                    <i class="fa-solid fa-tag"></i> DESCONTOS
+                  </div>
+                  <div class="chart-container" style="min-height: 160px;"><canvas id="chartVGFat"></canvas></div>
+                </div>
+
+                <div class="col-3">
+                  <div style="font-size: 0.72rem; font-weight: 700; color: #f97316; text-transform: uppercase; margin-bottom: 8px;">
+                    <i class="fa-solid fa-truck"></i> GASTOS COM TRANSPORTADORA
+                  </div>
+                  <div class="chart-container" style="min-height: 160px;"><canvas id="chartVGDesc"></canvas></div>
+                </div>
+
+                <div class="col-3">
+                  <div style="font-size: 0.72rem; font-weight: 700; color: #8b5cf6; text-transform: uppercase; margin-bottom: 8px;">
+                    <i class="fa-solid fa-wrench"></i> GASTOS COM ATS
+                  </div>
+                  <div class="chart-container" style="min-height: 160px;"><canvas id="chartVGTransp"></canvas></div>
+                </div>
+
+                <div class="col-3">
+                  <div style="font-size: 0.72rem; font-weight: 700; color: #10b981; text-transform: uppercase; margin-bottom: 8px;">
+                    <i class="fa-solid fa-circle-check"></i> CHAMADOS NO SLA
+                  </div>
+                  <div class="chart-container" style="min-height: 160px;"><canvas id="chartVGAt"></canvas></div>
+                </div>
+              </div>
             </div>
+
+            <!-- CARDS DE O QUE MELHOROU X O QUE PIOROU -->
+            <div class="card card-melhorou col-6">
+              <div style="font-size: 0.9rem; font-weight: 700; color: #15803d; margin-bottom: 12px; display: flex; align-items: center; gap: 8px;">
+                <i class="fa-solid fa-circle-check"></i> O que melhorou
+              </div>
+              <ul class="performance-list" style="color: #166534;" id="list-melhorou">
+                <li>Faturamento operacional consolidado em expansão.</li>
+                <li>Controle de descontos estruturado por período.</li>
+                <li>Logística de substituições com rotas mapeadas.</li>
+                <li>Equilíbrio e auditoria em assistência técnica externa.</li>
+              </ul>
+            </div>
+
+            <div class="card card-piorou col-6">
+              <div style="font-size: 0.9rem; font-weight: 700; color: #b91c1c; margin-bottom: 12px; display: flex; align-items: center; gap: 8px;">
+                <i class="fa-solid fa-circle-xmark"></i> O que piorou
+              </div>
+              <ul class="performance-list" style="color: #991b1b;" id="list-piorou">
+                <li>Acompanhamento crítico necessário para metas de SLA.</li>
+                <li>Desligamentos contratuais em monitoramento de margem.</li>
+                <li>Sazonalidades cíclicas elevando volume de aberturas.</li>
+                <li>Flutuações imprevistas em custos gerais de frete.</li>
+              </ul>
+            </div>
+
+            <!-- DIAGNÓSTICOS ESTRATÉGICOS -->
+            <div class="card col-12">
+              <div style="font-size: 0.85rem; font-weight: 700; letter-spacing: 0.5px; text-transform: uppercase; color: var(--text-muted); margin-bottom: 16px;">
+                DIAGNÓSTICOS ESTRATÉGICOS
+              </div>
+              <div id="diagnostico-estrategico">
+                <div class="diag-item">
+                  <h4>Acompanhamento Preventivo de SLA</h4>
+                  <p>Flutuações de SLA representam riscos estruturais. Recomenda-se revisão do protocolo de escalonamento para chamados de grande volume.</p>
+                </div>
+                <div class="diag-item">
+                  <h4>Escalada e Prevenção de Desligamentos</h4>
+                  <p>O crescimento de desligamentos sugere monitoramento rigoroso da frota ou processos operacionais pendentes.</p>
+                </div>
+                <div class="diag-item">
+                  <h4>Gestão Preventiva de Insumos de Campo</h4>
+                  <p>Sintomas mecânicos recorrentes apontam para a necessidade de um programa preventivo e acompanhamento cíclico das rotas.</p>
+                </div>
+              </div>
+            </div>
+
           </div>
         </section>
 
@@ -707,7 +815,6 @@
               <div class="chart-container"><canvas id="chartChamadosSla"></canvas></div>
             </div>
 
-            <!-- TABELA DE VALORES TOTAIS DE CHAMADOS -->
             <div class="card col-12">
               <div class="card-title"><i class="fa-solid fa-table"></i> Tabela Consolidada de Chamados</div>
               <div class="table-responsive">
@@ -767,7 +874,7 @@
           </div>
         </section>
 
-        <!-- ABA 7: CENTRO DE CUSTOS (CORREÇÃO MAPEAMENTO EXATO DE COLUNAS) -->
+        <!-- ABA 7: CENTRO DE CUSTOS -->
         <section id="tab-custos" class="tab-content">
           <div class="dashboard-grid" id="custos-kpis" style="display:none;">
             <div class="col-3"><div class="kpi-card"><span class="kpi-title">Faturamento</span><span class="kpi-value" id="kpi-fat">R$ 0</span></div></div>
@@ -790,7 +897,7 @@
 
             <div class="card col-12">
               <div class="card-title" style="color: #f97316; justify-content: flex-start;">
-                <i class="fa-solid fa-truck"></i> GASTOS TRANSPORTADORA (Valores por mês)
+                <i class="fa-solid fa-truck"></i> GASTOS TRANSPORTADORAS (Valores por mês)
               </div>
               <div class="chart-container" style="min-height: 260px;"><canvas id="chartCustosTransp"></canvas></div>
               <div class="custos-total-box">
@@ -1088,7 +1195,7 @@
           }
         }
 
-        // ABA CENTRO DE CUSTOS (MAPEAMENTO DINÂMICO BASEADO NO SEU PRINT REAL)
+        // ABA CENTRO DE CUSTOS
         else if (name.includes("CUSTO") || name.includes("CENTRO")) {
           const header = rows[0].map(h => String(h || '').trim().toUpperCase());
           
@@ -1100,7 +1207,6 @@
           let idxReal = 5;
           let idxAts = 6;
 
-          // Busca pelas colunas reais caso haja cabeçalhos específicos
           header.forEach((h, colIdx) => {
             if (h.includes("FATURAMENTO")) idxFat = colIdx;
             else if (h.includes("DESCONTO")) idxDesc = colIdx;
@@ -1145,7 +1251,7 @@
       updateAllDashboards();
     });
 
-    // BARRAS ARREDONDADAS
+    // CRIAÇÃO DE BARRAS ARREDONDADAS
     function createPillChart(canvasId, labels, dataValues, bgColors, datalabelFormatter, fontSize = 13) {
       if (chartInstances[canvasId]) {
         chartInstances[canvasId].destroy();
@@ -1223,6 +1329,57 @@
       });
     }
 
+    // CRIAÇÃO DE MINI SPARKLINE CHARTS DE LINHA COM ÁREA PREENCHIDA PARA VISÃO GERAL
+    function createSparklineChart(canvasId, labels, dataValues, lineColor, fillColor) {
+      if (chartInstances[canvasId]) {
+        chartInstances[canvasId].destroy();
+      }
+
+      const el = document.getElementById(canvasId);
+      if (!el) return;
+      const ctx = el.getContext('2d');
+
+      const isDark = document.body.classList.contains('dark-mode');
+      const textColor = isDark ? '#a0a0b0' : '#626471';
+
+      chartInstances[canvasId] = new Chart(ctx, {
+        type: 'line',
+        data: {
+          labels: labels,
+          datasets: [{
+            data: dataValues,
+            borderColor: lineColor,
+            borderWidth: 2,
+            backgroundColor: fillColor,
+            fill: true,
+            tension: 0.35,
+            pointRadius: 3,
+            pointBackgroundColor: lineColor,
+            pointHoverRadius: 5
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: { display: false },
+            datalabels: { display: false }
+          },
+          scales: {
+            x: {
+              grid: { display: false },
+              border: { display: false },
+              ticks: { color: textColor, font: { size: 10 } }
+            },
+            y: {
+              display: false,
+              grid: { display: false }
+            }
+          }
+        }
+      });
+    }
+
     function createChart(canvasId, config) {
       if (chartInstances[canvasId]) {
         chartInstances[canvasId].destroy();
@@ -1252,7 +1409,7 @@
       renderAtencao();
     }
 
-    /* ---------------- ABA 1: VISÃO GERAL ---------------- */
+    /* ---------------- ABA 1: VISÃO GERAL (DESIGNING CONFORME PRINT DE REFERÊNCIA) ---------------- */
     function renderVisaoGeral() {
       let meses = parsedData.listaMeses;
       if (periodoSelecionado !== 'TODOS') {
@@ -1269,36 +1426,23 @@
         return item ? item.percAtendidosSla : 0;
       });
 
-      createPillChart('chartVGChamados', meses, totalChamadosMes, colors.purpleDark, (v) => v, 13);
-      createPillChart('chartVGSla', meses, slaMes, colors.purpleMedium, (v) => `${v}%`, 13);
+      // 1. Gráficos do Topo
+      createPillChart('chartVGChamados', meses, totalChamadosMes, '#4f46e5', (v) => v, 13);
+      
+      // SLA com cores variadas conforme a faixa (Verde / Laranja)
+      const slaColors = slaMes.map(v => v >= 80 ? '#10b981' : '#f97316');
+      createPillChart('chartVGSla', meses, slaMes, slaColors, (v) => `${v}%`, 13);
 
-      const fat = meses.map(m => (parsedData.custos.find(c=>c.mes===m)||{}).faturamento||0);
+      // 2. Mini Gráficos Sparkline de Custos Operacionais
       const desc = meses.map(m => (parsedData.custos.find(c=>c.mes===m)||{}).desconto||0);
       const transp = meses.map(m => (parsedData.custos.find(c=>c.mes===m)||{}).transpReal||0);
       const at = meses.map(m => (parsedData.custos.find(c=>c.mes===m)||{}).gastoAts||0);
+      const chamadosSla = meses.map(m => (parsedData.chamados.find(c=>c.mes===m)||{}).atendidosSla||0);
 
-      const miniOpts = { plugins: { datalabels: { display: false } }, scales: { x: { display: false }, y: { display: false } } };
-
-      createChart('chartVGFat', { type: 'bar', data: { labels: meses, datasets: [{ data: fat, backgroundColor: '#2e7d32', borderRadius: 10 }] }, options: miniOpts });
-      createChart('chartVGDesc', { type: 'bar', data: { labels: meses, datasets: [{ data: desc, backgroundColor: '#c62828', borderRadius: 10 }] }, options: miniOpts });
-      createChart('chartVGTransp', { type: 'bar', data: { labels: meses, datasets: [{ data: transp, backgroundColor: '#ef6c00', borderRadius: 10 }] }, options: miniOpts });
-      createChart('chartVGAt', { type: 'bar', data: { labels: meses, datasets: [{ data: at, backgroundColor: '#1565c0', borderRadius: 10 }] }, options: miniOpts });
-
-      document.getElementById('list-melhorou').innerHTML = `
-        <li class="performance-item"><span class="badge badge-success"><i class="fa-solid fa-arrow-up"></i> SLA</span> Cumprimento do SLA mantido em alto desempenho.</li>
-        <li class="performance-item"><span class="badge badge-success"><i class="fa-solid fa-arrow-down"></i> Custos</span> Controle otimizado no rebalanceamento dos reembolsos.</li>
-      `;
-
-      document.getElementById('list-piorou').innerHTML = `
-        <li class="performance-item"><span class="badge badge-danger"><i class="fa-solid fa-arrow-up"></i> Volume</span> Variação pontual em modelos reincidentes.</li>
-        <li class="performance-item"><span class="badge badge-danger"><i class="fa-solid fa-arrow-up"></i> Trocas</span> Acompanhar trocas preventivas em picos de demanda.</li>
-      `;
-
-      document.getElementById('diagnostico-estrategico').innerHTML = `
-        <p style="font-size: 0.88rem; line-height: 1.5; color: var(--text-muted);">
-          O relatório demonstra estabilidade operacional nos períodos analisados. Recomenda-se focar a atuação técnica no Top 5 Sintomas Recorrentes para otimizar os atendimentos de primeira resposta.
-        </p>
-      `;
+      createSparklineChart('chartVGFat', meses, desc, '#ef4444', 'rgba(239, 68, 68, 0.12)');
+      createSparklineChart('chartVGDesc', meses, transp, '#f97316', 'rgba(249, 115, 22, 0.12)');
+      createSparklineChart('chartVGTransp', meses, at, '#8b5cf6', 'rgba(139, 92, 246, 0.12)');
+      createSparklineChart('chartVGAt', meses, chamadosSla, '#10b981', 'rgba(16, 185, 129, 0.12)');
     }
 
     /* ---------------- ABA 2: CHAMADOS ---------------- */
@@ -1557,7 +1701,7 @@
       createPillChart('chartTrocasPerc', labels, valuesPerc, colors.purplePastel, (v) => `${v}%`, 13);
     }
 
-    /* ---------------- ABA 7: CENTRO DE CUSTOS (MAPEAMENTO EXATO REFORÇADO) ---------------- */
+    /* ---------------- ABA 7: CENTRO DE CUSTOS ---------------- */
     function renderCustos() {
       const kpisContainer = document.getElementById('custos-kpis');
       const chartsContainer = document.getElementById('custos-charts-container');
@@ -1585,7 +1729,6 @@
         document.getElementById('total-acumulado-transp').innerText = formatBRL(sumTransp);
         document.getElementById('total-acumulado-at').innerText = formatBRL(sumAt);
 
-        // Preenchimento da Tabela Completa do Centro de Custos
         parsedData.custos.forEach(c => {
           tbody.innerHTML += `
             <tr>
