@@ -396,45 +396,6 @@
       min-height: 280px;
     }
 
-    /* Estilos Específicos para os Cards de Desempenho Automáticos */
-    .card-performance-green {
-      background-color: var(--green-pastel);
-      border: 1px solid #b7e1cd;
-      border-radius: 12px;
-      padding: 20px;
-    }
-
-    .card-performance-red {
-      background-color: var(--red-pastel);
-      border: 1px solid #f5c6cb;
-      border-radius: 12px;
-      padding: 20px;
-    }
-
-    .performance-list-custom {
-      list-style: none;
-      display: flex;
-      flex-direction: column;
-      gap: 8px;
-    }
-
-    .performance-list-custom li {
-      font-size: 0.83rem;
-      line-height: 1.4;
-      display: flex;
-      align-items: center;
-      gap: 8px;
-    }
-
-    .performance-list-custom.green li { color: var(--green-text); }
-    .performance-list-custom.red li { color: var(--red-text); }
-
-    .performance-list-custom li::before {
-      content: "•";
-      font-size: 1.2rem;
-      font-weight: bold;
-    }
-
     /* Total Acumulado Box na aba Custos */
     .custos-total-box {
       margin-top: 15px;
@@ -546,20 +507,6 @@
     .custom-table tr:hover td {
       background-color: var(--bg-primary);
     }
-
-    .badge {
-      display: inline-flex;
-      align-items: center;
-      gap: 6px;
-      padding: 6px 12px;
-      border-radius: 20px;
-      font-size: 0.78rem;
-      font-weight: 600;
-      margin-bottom: 8px;
-    }
-
-    .badge-success { background-color: var(--green-pastel); color: var(--green-text); }
-    .badge-danger  { background-color: var(--red-pastel); color: var(--red-text); }
 
     .risk-card {
       border-left: 4px solid var(--purple-primary);
@@ -676,7 +623,7 @@
 
       <div id="dashboard-content" style="display: none;">
 
-        <!-- ABA 1: VISÃO GERAL -->
+        <!-- ABA 1: VISÃO GERAL (CAMPOS DESNECESSÁRIOS REMOVIDOS) -->
         <section id="tab-visao-geral" class="tab-content active">
           <div class="dashboard-grid">
             
@@ -744,33 +691,6 @@
                 </div>
                 <div class="chart-container" style="min-height:150px;"><canvas id="chartVGDesc"></canvas></div>
               </div>
-            </div>
-
-            <!-- CARDS DE O QUE MELHOROU X O QUE PIOROU (GERADOS 100% AUTOMÁTICOS PELA PLANILHA) -->
-            <div class="col-6">
-              <div class="card-performance-green">
-                <div style="font-weight:700; font-size:0.95rem; color:var(--green-text); margin-bottom:12px; display:flex; align-items:center; gap:8px;">
-                  <i class="fa-regular fa-pen-to-square"></i> O que melhorou
-                </div>
-                <ul class="performance-list-custom green" id="list-melhorou-auto"></ul>
-              </div>
-            </div>
-
-            <div class="col-6">
-              <div class="card-performance-red">
-                <div style="font-weight:700; font-size:0.95rem; color:var(--red-text); margin-bottom:12px; display:flex; align-items:center; gap:8px;">
-                  <i class="fa-solid fa-triangle-exclamation"></i> O que piorou
-                </div>
-                <ul class="performance-list-custom red" id="list-piorou-auto"></ul>
-              </div>
-            </div>
-
-            <!-- DIAGNÓSTICOS ESTRATÉGICOS AUTOMÁTICOS E INTELIGENTES -->
-            <div class="card col-12" style="margin-top:10px;">
-              <div style="font-size:0.85rem; font-weight:800; letter-spacing:0.5px; text-transform:uppercase; color:var(--text-muted); margin-bottom:15px;">
-                DIAGNÓSTICOS ESTRATÉGICOS AUTOMÁTICOS
-              </div>
-              <div id="diagnostico-auto-container"></div>
             </div>
 
           </div>
@@ -1384,7 +1304,7 @@
       renderAtencao();
     }
 
-    /* ---------------- ABA 1: VISÃO GERAL (SISTEMA DE ANÁLISE 100% AUTOMÁTICA) ---------------- */
+    /* ---------------- ABA 1: VISÃO GERAL (EXCLUSIVAMENTE OS GRÁFICOS) ---------------- */
     function renderVisaoGeral() {
       let meses = parsedData.listaMeses;
       if (periodoSelecionado !== 'TODOS') {
@@ -1401,11 +1321,13 @@
         return item ? item.percAtendidosSla : 0;
       });
 
+      // Gráficos de barras horizontais arredondadas
       createPillChart('chartVGChamados', meses, totalChamadosMes, '#4f46e5', (v) => v, 13);
       
       const slaColors = slaMes.map(v => v >= 80 ? '#10b981' : (v >= 70 ? '#f97316' : '#ef4444'));
       createPillChart('chartVGSla', meses, slaMes, slaColors, (v) => `${v}%`, 13);
 
+      // Mini Gráficos de Evolução de Custos
       const desc = meses.map(m => (parsedData.custos.find(c=>c.mes===m)||{}).desconto||0);
       const transp = meses.map(m => (parsedData.custos.find(c=>c.mes===m)||{}).transpReal||0);
       const at = meses.map(m => (parsedData.custos.find(c=>c.mes===m)||{}).gastoAts||0);
@@ -1415,83 +1337,6 @@
       createSparklineChart('chartVGTransp', meses, transp, '#f97316', 'rgba(249, 115, 22, 0.1)');
       createSparklineChart('chartVGAt', meses, at, '#8b5cf6', 'rgba(139, 92, 246, 0.1)');
       createSparklineChart('chartVGDesc', meses, slaTotal, '#10b981', 'rgba(16, 185, 129, 0.1)');
-
-      // --- GERADOR AUTOMÁTICO E INTELIGENTE DE PONTOS POSITIVOS E NEGATIVOS ---
-      const melhorouList = [];
-      const piorouList = [];
-      const diagList = [];
-
-      const totalChamadosVal = totalChamadosMes.reduce((a,c)=>a+c, 0);
-      const avgSla = slaMes.length ? Math.round(slaMes.reduce((a,c)=>a+c, 0)/slaMes.length) : 0;
-      const totalFat = meses.map(m => (parsedData.custos.find(c=>c.mes===m)||{}).faturamento||0).reduce((a,c)=>a+c, 0);
-      const totalTransp = transp.reduce((a,c)=>a+c, 0);
-      const totalDesc = desc.reduce((a,c)=>a+c, 0);
-
-      // Análise SLA
-      if (avgSla >= 80) {
-        melhorouList.push(`Cumprimento médio de SLA mantido em alto desempenho (${avgSla}%).`);
-      } else {
-        piorouList.push(`Índice médio de SLA (${avgSla}%) abaixo da meta operacional de 80%.`);
-        diagList.push({
-          titulo: 'Acompanhamento Crítico de SLA',
-          desc: `A taxa de SLA apurada de ${avgSla}% exige revisão imediata nos fluxos de atendimento e triagem.`
-        });
-      }
-
-      // Análise Faturamento e Custos
-      if (totalFat > 0) {
-        melhorouList.push(`Faturamento consolidado atingiu ${formatBRL(totalFat)} no período.`);
-      }
-
-      if (totalDesc === 0) {
-        melhorouList.push('Nenhum valor de desconto ou penalização registrado nos períodos.');
-      } else if (totalDesc > 10000) {
-        piorouList.push(`Volume total acumulado de descontos em ${formatBRL(totalDesc)}.`);
-      }
-
-      // Análise Modelo e Sintoma Top 1
-      const modelosMap = {};
-      Object.keys(parsedData.modelosPorMes).forEach(m => {
-        parsedData.modelosPorMes[m].forEach(i => modelosMap[i.nome] = (modelosMap[i.nome]||0)+i.valor);
-      });
-      const topModelo = Object.entries(modelosMap).sort((a,b)=>b[1]-a[1])[0];
-
-      const sintomasMap = {};
-      Object.keys(parsedData.sintomasPorMes).forEach(m => {
-        parsedData.sintomasPorMes[m].forEach(i => sintomasMap[i.nome] = (sintomasMap[i.nome]||0)+i.valor);
-      });
-      const topSintoma = Object.entries(sintomasMap).sort((a,b)=>b[1]-a[1])[0];
-
-      if (topModelo) {
-        piorouList.push(`Reincidência concentrada no modelo ${topModelo[0]} (${topModelo[1]} chamados).`);
-        diagList.push({
-          titulo: `Gestão Preventiva do Modelo ${topModelo[0]}`,
-          desc: `O modelo ${topModelo[0]} lidera o volume de aberturas com ${topModelo[1]} ocorrências acumuladas. Recomenda-se boletim técnico.`
-        });
-      }
-
-      if (topSintoma) {
-        piorouList.push(`Sintoma de maior impacto: ${topSintoma[0]} (${topSintoma[1]} ocorrências).`);
-        diagList.push({
-          titulo: `Atuação Focada em ${topSintoma[0]}`,
-          desc: `Principal causa de chamados identificada como ${topSintoma[0]}. Atuação preventiva direta recomendada nas rotas.`
-        });
-      }
-
-      if (melhorouList.length === 0) melhorouList.push('Operação estabilizada nos parâmetros iniciais.');
-      if (piorouList.length === 0) piorouList.push('Sem oscilações negativas críticas detectadas no período.');
-
-      // Injeção no HTML
-      document.getElementById('list-melhorou-auto').innerHTML = melhorouList.map(item => `<li>${item}</li>`).join('');
-      document.getElementById('list-piorou-auto').innerHTML = piorouList.map(item => `<li>${item}</li>`).join('');
-
-      const diagContainer = document.getElementById('diagnostico-auto-container');
-      diagContainer.innerHTML = diagList.map((d, idx) => `
-        <div class="risk-card medium" style="border-left-color:#4f46e5; background:transparent; padding:0 0 0 12px; margin-bottom:${idx===diagList.length-1?0:15}px;">
-          <div style="font-weight:700; font-size:0.88rem; color:var(--text-main);">${d.titulo}</div>
-          <div style="font-size:0.8rem; color:var(--text-muted);">${d.desc}</div>
-        </div>
-      `).join('');
     }
 
     /* ---------------- ABA 2: CHAMADOS ---------------- */
