@@ -377,7 +377,8 @@
       margin-bottom: 15px;
       display: flex;
       align-items: center;
-      justify-content: space-between;
+      justify-content: flex-start;
+      gap: 8px;
     }
 
     .card-title i {
@@ -402,6 +403,7 @@
       border-top: 1px solid var(--border-color);
       display: flex;
       flex-direction: column;
+      align-items: flex-start;
       gap: 2px;
     }
 
@@ -413,7 +415,7 @@
     }
 
     .custos-total-val {
-      font-size: 1.25rem;
+      font-size: 1.3rem;
       font-weight: 800;
     }
 
@@ -654,16 +656,16 @@
         <section id="tab-visao-geral" class="tab-content active">
           <div class="dashboard-grid">
             <div class="card col-6">
-              <div class="card-title">Volume de Chamados Mês a Mês <i class="fa-solid fa-chart-bar"></i></div>
+              <div class="card-title"><i class="fa-solid fa-chart-bar"></i> Volume de Chamados Mês a Mês</div>
               <div class="chart-container"><canvas id="chartVGChamados"></canvas></div>
             </div>
             <div class="card col-6">
-              <div class="card-title">SLA Cumprido Mês a Mês (%) <i class="fa-solid fa-chart-line"></i></div>
+              <div class="card-title"><i class="fa-solid fa-chart-line"></i> SLA Cumprido Mês a Mês (%)</div>
               <div class="chart-container"><canvas id="chartVGSla"></canvas></div>
             </div>
 
             <div class="card col-12">
-              <div class="card-title">Evolução de Custos Operacionais <i class="fa-solid fa-dollar-sign"></i></div>
+              <div class="card-title"><i class="fa-solid fa-dollar-sign"></i> Evolução de Custos Operacionais</div>
               <div class="dashboard-grid" style="margin-bottom:0;">
                 <div class="col-3"><div class="chart-container" style="min-height:180px;"><canvas id="chartVGFat"></canvas></div></div>
                 <div class="col-3"><div class="chart-container" style="min-height:180px;"><canvas id="chartVGDesc"></canvas></div></div>
@@ -689,20 +691,40 @@
           </div>
         </section>
 
-        <!-- ABA 2: CHAMADOS -->
+        <!-- ABA 2: CHAMADOS (COM TABELA DE VALORES TOTAIS) -->
         <section id="tab-chamados" class="tab-content">
           <div class="dashboard-grid">
             <div class="card col-4">
-              <div class="card-title">Total de Chamados</div>
+              <div class="card-title"><i class="fa-solid fa-list-check"></i> Total de Chamados</div>
               <div class="chart-container"><canvas id="chartChamadosTotal"></canvas></div>
             </div>
             <div class="card col-4">
-              <div class="card-title">Atendidos (Quantidade e %)</div>
+              <div class="card-title"><i class="fa-solid fa-user-check"></i> Atendidos (Quantidade e %)</div>
               <div class="chart-container"><canvas id="chartChamadosAtendidos"></canvas></div>
             </div>
             <div class="card col-4">
-              <div class="card-title">SLA Cumprido (Quantidade e %)</div>
+              <div class="card-title"><i class="fa-solid fa-clock-check"></i> SLA Cumprido (Quantidade e %)</div>
               <div class="chart-container"><canvas id="chartChamadosSla"></canvas></div>
+            </div>
+
+            <!-- TABELA DE VALORES TOTAIS DE CHAMADOS -->
+            <div class="card col-12">
+              <div class="card-title"><i class="fa-solid fa-table"></i> Tabela Consolidada de Chamados</div>
+              <div class="table-responsive">
+                <table class="custom-table">
+                  <thead>
+                    <tr>
+                      <th>MÊS</th>
+                      <th>TOTAL CHAMADOS</th>
+                      <th>ATENDIDOS</th>
+                      <th>% ATENDIDOS</th>
+                      <th>ATENDIDOS NO SLA</th>
+                      <th>% SLA</th>
+                    </tr>
+                  </thead>
+                  <tbody id="chamados-table-body"></tbody>
+                </table>
+              </div>
             </div>
           </div>
         </section>
@@ -717,27 +739,35 @@
           <div id="sintomas-container" class="dashboard-grid"></div>
         </section>
 
-        <!-- ABA 5: DESLIGAMENTOS -->
+        <!-- ABA 5: DESLIGAMENTOS (COM GRÁFICO DE QUANTIDADE E PORCENTAGEM) -->
         <section id="tab-desligamentos" class="tab-content">
           <div class="dashboard-grid">
             <div class="card col-12">
-              <div class="card-title">Quantidade de Desligamentos Mês a Mês</div>
-              <div class="chart-container" style="min-height: 350px;"><canvas id="chartDesligamentos"></canvas></div>
+              <div class="card-title"><i class="fa-solid fa-user-slash"></i> Quantidade de Desligamentos por Mês</div>
+              <div class="chart-container" style="min-height: 280px;"><canvas id="chartDesligamentos"></canvas></div>
+            </div>
+            <div class="card col-12">
+              <div class="card-title"><i class="fa-solid fa-percent"></i> Porcentagem (%) de Desligamentos por Mês</div>
+              <div class="chart-container" style="min-height: 280px;"><canvas id="chartDesligamentosPerc"></canvas></div>
             </div>
           </div>
         </section>
 
-        <!-- ABA 6: TROCAS DE EQUIPAMENTOS -->
+        <!-- ABA 6: TROCAS DE EQUIPAMENTOS (COM GRÁFICO DE QUANTIDADE E PORCENTAGEM) -->
         <section id="tab-trocas" class="tab-content">
           <div class="dashboard-grid">
             <div class="card col-12">
-              <div class="card-title">Quantidade de Trocas de Equipamentos Mês a Mês</div>
-              <div class="chart-container" style="min-height: 350px;"><canvas id="chartTrocas"></canvas></div>
+              <div class="card-title"><i class="fa-solid fa-arrows-rotate"></i> Quantidade de Trocas de Equipamentos por Mês</div>
+              <div class="chart-container" style="min-height: 280px;"><canvas id="chartTrocas"></canvas></div>
+            </div>
+            <div class="card col-12">
+              <div class="card-title"><i class="fa-solid fa-percent"></i> Porcentagem (%) de Trocas de Equipamentos por Mês</div>
+              <div class="chart-container" style="min-height: 280px;"><canvas id="chartTrocasPerc"></canvas></div>
             </div>
           </div>
         </section>
 
-        <!-- ABA 7: CENTRO DE CUSTOS (NOVO DESIGNIG EXPANDIDO TIPO REFERÊNCIA) -->
+        <!-- ABA 7: CENTRO DE CUSTOS (TITULOS À ESQUERDA + TABELA COMPLETA COM 7 COLUNAS) -->
         <section id="tab-custos" class="tab-content">
           <div class="dashboard-grid" id="custos-kpis" style="display:none;">
             <div class="col-3"><div class="kpi-card"><span class="kpi-title">Faturamento</span><span class="kpi-value" id="kpi-fat">R$ 0</span></div></div>
@@ -747,9 +777,10 @@
           </div>
 
           <div class="dashboard-grid" id="custos-charts-container">
-            <!-- CARDS DE CUSTOS EXPANDIDOS EM LARGURA TOTAL -->
             <div class="card col-12">
-              <div class="card-title" style="color: #ef4444;"><i class="fa-solid fa-tags"></i> DESCONTOS (Valores por mês)</div>
+              <div class="card-title" style="color: #ef4444; justify-content: flex-start;">
+                <i class="fa-solid fa-tags"></i> DESCONTOS (Valores por mês)
+              </div>
               <div class="chart-container" style="min-height: 260px;"><canvas id="chartCustosDesc"></canvas></div>
               <div class="custos-total-box">
                 <span class="custos-total-label">total acumulado</span>
@@ -758,7 +789,9 @@
             </div>
 
             <div class="card col-12">
-              <div class="card-title" style="color: #f97316;"><i class="fa-solid fa-truck"></i> GASTOS TRANSPORTADORA (Valores por mês)</div>
+              <div class="card-title" style="color: #f97316; justify-content: flex-start;">
+                <i class="fa-solid fa-truck"></i> GASTOS TRANSPORTADORAS (Valores por mês)
+              </div>
               <div class="chart-container" style="min-height: 260px;"><canvas id="chartCustosTransp"></canvas></div>
               <div class="custos-total-box">
                 <span class="custos-total-label">total acumulado</span>
@@ -767,7 +800,9 @@
             </div>
 
             <div class="card col-12">
-              <div class="card-title" style="color: #8b5cf6;"><i class="fa-solid fa-wrench"></i> GASTOS COM AT (Valores por mês)</div>
+              <div class="card-title" style="color: #8b5cf6; justify-content: flex-start;">
+                <i class="fa-solid fa-wrench"></i> GASTOS COM AT (Valores por mês)
+              </div>
               <div class="chart-container" style="min-height: 260px;"><canvas id="chartCustosAt"></canvas></div>
               <div class="custos-total-box">
                 <span class="custos-total-label">total acumulado</span>
@@ -778,7 +813,7 @@
 
           <div class="dashboard-grid">
             <div class="card col-12">
-              <div class="card-title" style="font-size:0.85rem; letter-spacing:0.5px; text-transform:uppercase;">
+              <div class="card-title" style="font-size:0.85rem; letter-spacing:0.5px; text-transform:uppercase; justify-content: flex-start;">
                 COMPARATIVO DETALHADO POR MÊS
               </div>
               <div class="table-responsive">
@@ -787,10 +822,11 @@
                     <tr>
                       <th>MÊS</th>
                       <th>FATURAMENTO</th>
-                      <th>DESCONTOS</th>
-                      <th>TRANSPORTADORA</th>
-                      <th>ATs</th>
-                      <th>TOTAL CUSTOS</th>
+                      <th>DESCONTO</th>
+                      <th>GASTO TRANSPORTADORA BRUTO</th>
+                      <th>REEMBOLSO TRANSPORTADORA</th>
+                      <th>GASTO TRANSPORTADORA REAL</th>
+                      <th>GASTO ATS</th>
                     </tr>
                   </thead>
                   <tbody id="custos-table-body"></tbody>
@@ -1052,7 +1088,7 @@
           }
         }
 
-        // ABA CENTRO DE CUSTOS
+        // ABA CENTRO DE CUSTOS (MAPEAMENTO REFORÇADO DA COLUNA I PARA TRANSP. REAL)
         else if (name.includes("CUSTO") || name.includes("CENTRO")) {
           for (let i = 1; i < rows.length; i++) {
             const mes = String(rows[i][0] || '').trim();
@@ -1065,7 +1101,7 @@
                 percDesconto: parsePercentage(rows[i][4]),
                 transpBruto: parseNumber(rows[i][5]),
                 reembolsoTransp: parseNumber(rows[i][6]),
-                transpReal: parseNumber(rows[i][7]),
+                transpReal: parseNumber(rows[i][7]), // Puxa do Gasto Transportadora Real
                 gastoAts: parseNumber(rows[i][8]),
                 percGastoAts: parsePercentage(rows[i][9])
               });
@@ -1091,8 +1127,8 @@
       updateAllDashboards();
     });
 
-    // FUNÇÃO PADRONIZADA DE CRIAÇÃO DE GRÁFICOS COM DESIGN DE BARRAS ARREDONDADAS
-    function createPillChart(canvasId, labels, dataValues, bgColors, datalabelFormatter) {
+    // CRIAÇÃO DE BARRAS ARREDONDADAS COM FONTE LEVEMENTE AUMENTADA
+    function createPillChart(canvasId, labels, dataValues, bgColors, datalabelFormatter, fontSize = 13) {
       if (chartInstances[canvasId]) {
         chartInstances[canvasId].destroy();
       }
@@ -1118,7 +1154,7 @@
               backgroundColor: trackColor,
               borderRadius: 20,
               borderSkipped: false,
-              barThickness: 20,
+              barThickness: 22,
               grouped: false,
               order: 2,
               datalabels: { display: false }
@@ -1128,7 +1164,7 @@
               backgroundColor: bgColors,
               borderRadius: 20,
               borderSkipped: false,
-              barThickness: 20,
+              barThickness: 22,
               grouped: false,
               order: 1,
               datalabels: {
@@ -1136,7 +1172,7 @@
                 align: 'end',
                 formatter: datalabelFormatter,
                 color: textColor,
-                font: { weight: 'bold', size: 11 },
+                font: { weight: '700', size: fontSize },
                 textAlign: 'left'
               }
             }
@@ -1154,7 +1190,7 @@
             x: {
               display: false,
               grid: { display: false },
-              max: maxVal * 1.2
+              max: maxVal * 1.22
             },
             y: {
               grid: { display: false },
@@ -1215,8 +1251,8 @@
         return item ? item.percAtendidosSla : 0;
       });
 
-      createPillChart('chartVGChamados', meses, totalChamadosMes, colors.purpleDark, (v) => v);
-      createPillChart('chartVGSla', meses, slaMes, colors.purpleMedium, (v) => `${v}%`);
+      createPillChart('chartVGChamados', meses, totalChamadosMes, colors.purpleDark, (v) => v, 13);
+      createPillChart('chartVGSla', meses, slaMes, colors.purpleMedium, (v) => `${v}%`, 13);
 
       // Mini Gráficos de Custos
       const fat = meses.map(m => (parsedData.custos.find(c=>c.mes===m)||{}).faturamento||0);
@@ -1248,7 +1284,7 @@
       `;
     }
 
-    /* ---------------- ABA 2: CHAMADOS ---------------- */
+    /* ---------------- ABA 2: CHAMADOS (AUMENTO DE FONTE + TABELA COMPLETA) ---------------- */
     function renderChamados() {
       let chamadosSub = parsedData.chamados;
       if (periodoSelecionado !== 'TODOS') {
@@ -1262,12 +1298,29 @@
       const valSla = chamadosSub.map(c => c.atendidosSla);
       const percSlaList = chamadosSub.map(c => c.percAtendidosSla);
 
-      createPillChart('chartChamadosTotal', labelsMeses, valTotal, colors.purpleDark, (v) => v);
-      createPillChart('chartChamadosAtendidos', labelsMeses, valAtendidos, colors.purpleMedium, (v, ctx) => `${v} (${percAtendidosList[ctx.dataIndex]}%)`);
-      createPillChart('chartChamadosSla', labelsMeses, valSla, colors.purplePastel, (v, ctx) => `${v} (${percSlaList[ctx.dataIndex]}%)`);
+      // Renderização com Fonte Aumentada (13px)
+      createPillChart('chartChamadosTotal', labelsMeses, valTotal, colors.purpleDark, (v) => v, 13);
+      createPillChart('chartChamadosAtendidos', labelsMeses, valAtendidos, colors.purpleMedium, (v, ctx) => `${v} (${percAtendidosList[ctx.dataIndex]}%)`, 13);
+      createPillChart('chartChamadosSla', labelsMeses, valSla, colors.purplePastel, (v, ctx) => `${v} (${percSlaList[ctx.dataIndex]}%)`, 13);
+
+      // Preenchimento da Tabela Consolidada de Chamados
+      const tbody = document.getElementById('chamados-table-body');
+      tbody.innerHTML = '';
+      chamadosSub.forEach(c => {
+        tbody.innerHTML += `
+          <tr>
+            <td><strong>${c.mes}</strong></td>
+            <td>${c.chamados.toLocaleString()}</td>
+            <td>${c.atendidos.toLocaleString()}</td>
+            <td>${c.percAtendidos}%</td>
+            <td>${c.atendidosSla.toLocaleString()}</td>
+            <td style="font-weight:700; color:var(--purple-primary);">${c.percAtendidosSla}%</td>
+          </tr>
+        `;
+      });
     }
 
-    /* ---------------- ABA 3: MODELOS ---------------- */
+    /* ---------------- ABA 3: MODELOS (FONTE AUMENTADA) ---------------- */
     function renderModelos() {
       const container = document.getElementById('modelos-container');
       if (!container) return;
@@ -1287,7 +1340,7 @@
 
         container.innerHTML += `
           <div class="card col-12">
-            <div class="card-title" style="font-size:0.85rem; letter-spacing:0.5px; text-transform:uppercase; color:var(--text-muted);">
+            <div class="card-title" style="font-size:0.85rem; letter-spacing:0.5px; text-transform:uppercase; color:var(--text-muted); justify-content:flex-start;">
               TOTAL DE CHAMADOS POR MODELO (ACUMULADO)
             </div>
             <div class="chart-container" style="min-height: 280px;">
@@ -1303,7 +1356,8 @@
             sortedAcumulado.map(s => s.nome),
             sortedAcumulado.map(s => s.valor),
             bgCols,
-            (v) => v
+            (v) => v,
+            13
           );
         }, 50);
 
@@ -1311,7 +1365,7 @@
           const chartId = `chartModeloMes_${idx}`;
           container.innerHTML += `
             <div class="card col-12">
-              <div class="card-title" style="font-size:0.9rem; font-weight:700;">
+              <div class="card-title" style="font-size:0.9rem; font-weight:700; justify-content:flex-start;">
                 ${mes} — Top 5 Modelos
               </div>
               <div class="chart-container" style="min-height: 240px;">
@@ -1328,7 +1382,8 @@
               listMes.map(l => l.nome),
               listMes.map(l => l.valor),
               bgCols,
-              (v, ctx) => `${v} (${listMes[ctx.dataIndex].perc}%)`
+              (v, ctx) => `${v} (${listMes[ctx.dataIndex].perc}%)`,
+              13
             );
           }, 50);
         });
@@ -1337,7 +1392,7 @@
         const chartId = `chartModeloMes_Unico`;
         container.innerHTML = `
           <div class="card col-12">
-            <div class="card-title" style="font-size:0.95rem; font-weight:700;">
+            <div class="card-title" style="font-size:0.95rem; font-weight:700; justify-content:flex-start;">
               ${periodoSelecionado} — Top 5 Modelos Recorrentes
             </div>
             <div class="chart-container" style="min-height: 350px;">
@@ -1354,13 +1409,14 @@
             listMes.map(l => l.nome),
             listMes.map(l => l.valor),
             bgCols,
-            (v, ctx) => `${v} (${listMes[ctx.dataIndex].perc}%)`
+            (v, ctx) => `${v} (${listMes[ctx.dataIndex].perc}%)`,
+            14
           );
         }, 50);
       }
     }
 
-    /* ---------------- ABA 4: SINTOMAS ---------------- */
+    /* ---------------- ABA 4: SINTOMAS (FONTE AUMENTADA) ---------------- */
     function renderSintomas() {
       const container = document.getElementById('sintomas-container');
       if (!container) return;
@@ -1380,7 +1436,7 @@
 
         container.innerHTML += `
           <div class="card col-12">
-            <div class="card-title" style="font-size:0.85rem; letter-spacing:0.5px; text-transform:uppercase; color:var(--text-muted);">
+            <div class="card-title" style="font-size:0.85rem; letter-spacing:0.5px; text-transform:uppercase; color:var(--text-muted); justify-content:flex-start;">
               TOTAL DE CHAMADOS POR SINTOMA (ACUMULADO)
             </div>
             <div class="chart-container" style="min-height: 280px;">
@@ -1396,7 +1452,8 @@
             sortedAcumulado.map(s => s.nome),
             sortedAcumulado.map(s => s.valor),
             bgCols,
-            (v) => v
+            (v) => v,
+            13
           );
         }, 50);
 
@@ -1404,7 +1461,7 @@
           const chartId = `chartSintomaMes_${idx}`;
           container.innerHTML += `
             <div class="card col-12">
-              <div class="card-title" style="font-size:0.9rem; font-weight:700;">
+              <div class="card-title" style="font-size:0.9rem; font-weight:700; justify-content:flex-start;">
                 ${mes} — Top 5 Sintomas
               </div>
               <div class="chart-container" style="min-height: 240px;">
@@ -1421,7 +1478,8 @@
               listMes.map(l => l.nome),
               listMes.map(l => l.valor),
               bgCols,
-              (v, ctx) => `${v} (${listMes[ctx.dataIndex].perc}%)`
+              (v, ctx) => `${v} (${listMes[ctx.dataIndex].perc}%)`,
+              13
             );
           }, 50);
         });
@@ -1430,7 +1488,7 @@
         const chartId = `chartSintomaMes_Unico`;
         container.innerHTML = `
           <div class="card col-12">
-            <div class="card-title" style="font-size:0.95rem; font-weight:700;">
+            <div class="card-title" style="font-size:0.95rem; font-weight:700; justify-content:flex-start;">
               ${periodoSelecionado} — Top 5 Sintomas Recorrentes
             </div>
             <div class="chart-container" style="min-height: 350px;">
@@ -1447,13 +1505,14 @@
             listMes.map(l => l.nome),
             listMes.map(l => l.valor),
             bgCols,
-            (v, ctx) => `${v} (${listMes[ctx.dataIndex].perc}%)`
+            (v, ctx) => `${v} (${listMes[ctx.dataIndex].perc}%)`,
+            14
           );
         }, 50);
       }
     }
 
-    /* ---------------- ABA 5: DESLIGAMENTOS ---------------- */
+    /* ---------------- ABA 5: DESLIGAMENTOS (QUANTIDADE E PORCENTAGEM) ---------------- */
     function renderDesligamentos() {
       let data = parsedData.desligamentos;
       if (periodoSelecionado !== 'TODOS') {
@@ -1461,12 +1520,14 @@
       }
 
       const labels = data.map(d => d.mes);
-      const values = data.map(d => d.quantidade);
+      const valuesQtd = data.map(d => d.quantidade);
+      const valuesPerc = data.map(d => d.porcentagem);
 
-      createPillChart('chartDesligamentos', labels, values, colors.purpleDark, (v) => v);
+      createPillChart('chartDesligamentos', labels, valuesQtd, colors.purpleDark, (v) => v, 13);
+      createPillChart('chartDesligamentosPerc', labels, valuesPerc, colors.purpleMedium, (v) => `${v}%`, 13);
     }
 
-    /* ---------------- ABA 6: TROCAS DE EQUIPAMENTOS ---------------- */
+    /* ---------------- ABA 6: TROCAS DE EQUIPAMENTOS (QUANTIDADE E PORCENTAGEM) ---------------- */
     function renderTrocas() {
       let data = parsedData.trocas;
       if (periodoSelecionado !== 'TODOS') {
@@ -1474,12 +1535,14 @@
       }
 
       const labels = data.map(d => d.mes);
-      const values = data.map(d => d.quantidade);
+      const valuesQtd = data.map(d => d.quantidade);
+      const valuesPerc = data.map(d => d.porcentagem);
 
-      createPillChart('chartTrocas', labels, values, colors.purpleMedium, (v) => v);
+      createPillChart('chartTrocas', labels, valuesQtd, colors.purpleMedium, (v) => v, 13);
+      createPillChart('chartTrocasPerc', labels, valuesPerc, colors.purplePastel, (v) => `${v}%`, 13);
     }
 
-    /* ---------------- ABA 7: CENTRO DE CUSTOS (FORMATO EXPANDIDO CONFORME REFERÊNCIA) ---------------- */
+    /* ---------------- ABA 7: CENTRO DE CUSTOS (TITULOS À ESQUERDA + TODAS AS COLUNAS) ---------------- */
     function renderCustos() {
       const kpisContainer = document.getElementById('custos-kpis');
       const chartsContainer = document.getElementById('custos-charts-container');
@@ -1495,12 +1558,10 @@
         const transp = meses.map(m => (parsedData.custos.find(c=>c.mes===m)||{}).transpReal||0);
         const at = meses.map(m => (parsedData.custos.find(c=>c.mes===m)||{}).gastoAts||0);
 
-        // Renderização dos 3 Gráficos no modelo Pill Chart
-        createPillChart('chartCustosDesc', meses, desc, '#ef4444', (v) => formatBRL(v));
-        createPillChart('chartCustosTransp', meses, transp, '#f97316', (v) => formatBRL(v));
-        createPillChart('chartCustosAt', meses, at, '#8b5cf6', (v) => formatBRL(v));
+        createPillChart('chartCustosDesc', meses, desc, '#ef4444', (v) => formatBRL(v), 12);
+        createPillChart('chartCustosTransp', meses, transp, '#f97316', (v) => formatBRL(v), 12);
+        createPillChart('chartCustosAt', meses, at, '#8b5cf6', (v) => formatBRL(v), 12);
 
-        // Cálculo dos Totais Acumulados
         const sumDesc = desc.reduce((a,c)=>a+c, 0);
         const sumTransp = transp.reduce((a,c)=>a+c, 0);
         const sumAt = at.reduce((a,c)=>a+c, 0);
@@ -1509,17 +1570,17 @@
         document.getElementById('total-acumulado-transp').innerText = formatBRL(sumTransp);
         document.getElementById('total-acumulado-at').innerText = formatBRL(sumAt);
 
-        // Preenchimento da Tabela Comparativa Detalhada
+        // Preenchimento da Tabela Completa (Com todas as colunas da planilha)
         parsedData.custos.forEach(c => {
-          const totalCustosMes = c.desconto + c.transpReal + c.gastoAts;
           tbody.innerHTML += `
             <tr>
               <td><strong>${c.mes}</strong></td>
               <td>${formatBRL(c.faturamento)}</td>
               <td style="color: #ef4444; font-weight: 600;">${formatBRL(c.desconto)}</td>
+              <td>${formatBRL(c.transpBruto)}</td>
+              <td>${formatBRL(c.reembolsoTransp)}</td>
               <td style="color: #f97316; font-weight: 600;">${formatBRL(c.transpReal)}</td>
               <td style="color: #8b5cf6; font-weight: 600;">${formatBRL(c.gastoAts)}</td>
-              <td style="font-weight: 700;">${formatBRL(totalCustosMes)}</td>
             </tr>
           `;
         });
@@ -1536,15 +1597,15 @@
         document.getElementById('kpi-at').innerText = formatBRL(item.gastoAts||0);
 
         if (item.mes) {
-          const totalCustosMes = (item.desconto||0) + (item.transpReal||0) + (item.gastoAts||0);
           tbody.innerHTML = `
             <tr>
               <td><strong>${item.mes}</strong></td>
               <td>${formatBRL(item.faturamento)}</td>
               <td style="color: #ef4444; font-weight: 600;">${formatBRL(item.desconto)}</td>
+              <td>${formatBRL(item.transpBruto)}</td>
+              <td>${formatBRL(item.reembolsoTransp)}</td>
               <td style="color: #f97316; font-weight: 600;">${formatBRL(item.transpReal)}</td>
               <td style="color: #8b5cf6; font-weight: 600;">${formatBRL(item.gastoAts)}</td>
-              <td style="font-weight: 700;">${formatBRL(totalCustosMes)}</td>
             </tr>
           `;
         }
