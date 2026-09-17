@@ -685,7 +685,7 @@
           </div>
         </section>
 
-        <!-- ABA 3: MODELOS (DESIGN NOVO COM ACUMULADO + MESES SEPARADOS) -->
+        <!-- ABA 3: MODELOS -->
         <section id="tab-modelos" class="tab-content">
           <div id="modelos-container" class="dashboard-grid">
             <!-- Renderizado dinamicamente via JavaScript -->
@@ -791,7 +791,7 @@
 
     let parsedData = {
       chamados: [],
-      modelos: [],
+      modelosPorMes: {}, // { "JANEIRO": [{ nome, valor, perc }], ... }
       sintomas: [],
       desligamentos: [],
       trocas: [],
@@ -802,7 +802,6 @@
     let periodoSelecionado = 'TODOS';
     let chartInstances = {};
 
-    // Paleta de Cores Vivas (inspirada no modelo de referência)
     const palette = [
       '#4f46e5', // Azul Real
       '#f97316', // Laranja
@@ -844,6 +843,32 @@
         return Math.round(n * 100);
       }
       return Math.round(n);
+    }
+
+    // EXTRAI NOME, VALOR E PORCENTAGEM DE CÉLULAS COMBO (Ex: "S9 - 41 (22%)")
+    function parseComboCell(cellValue) {
+      if (!cellValue) return null;
+      const str = String(cellValue).trim();
+      if (!str || str.toUpperCase().includes("TOTAL")) return null;
+
+      // Regex para separar: Nome - Valor (Porcentagem%)
+      // Ex: "S9 - 41 (22%)" -> Nome: S9, Valor: 41, Perc: 22
+      const match = str.match(/^(.+?)\s*[\-\–]\s*(\d+)\s*\((.*?)\%?\)$/);
+
+      if (match) {
+        return {
+          nome: match[1].trim(),
+          valor: parseInt(match[2], 10),
+          perc: match[3].trim()
+        };
+      } else {
+        // Fallback para nomes simples
+        return {
+          nome: str,
+          valor: 0,
+          perc: '0'
+        };
+      }
     }
 
     // Alternar Tema
@@ -902,12 +927,12 @@
       reader.readAsArrayBuffer(file);
     });
 
-    // PROCESSAMENTO DA PLANILHA
+    // PROCESSAMENTO DA PLANILHA EXCEL
     function processExcel(workbook) {
-      parsedData = { chamados: [], modelos: [], sintomas: [], desligamentos: [], trocas: [], custos: [], listaMeses: [] };
+      parsedData = { chamados: [], modelosPorMes: {}, sintomas: [], desligamentos: [], trocas: [], custos: [], listaMeses: [] };
       const mesesValidosSet = new Set();
 
-      // ABA CHAMADOS (Mestres)
+      // 1. ABA CHAMADOS (Define os Meses Mestres)
       workbook.SheetNames.forEach(sheetName => {
         if (sheetName.trim().toUpperCase().includes("CHAMADO")) {
           const sheet = workbook.Sheets[sheetName];
@@ -931,59 +956,28 @@
 
       parsedData.listaMeses = Array.from(mesesValidosSet);
 
-      // OUTRAS ABAS
+      // 2. OUTRAS ABAS
       workbook.SheetNames.forEach(sheetName => {
         const name = sheetName.trim().toUpperCase();
         const sheet = workbook.Sheets[sheetName];
         const rows = XLSX.utils.sheet_to_json(sheet, { header: 1, defval: "" });
         if (rows.length <= 1) return;
 
-        // ABA MODELOS
+        // ABA MODELOS (Estrutura da Imagem)
         if (name.includes("MODELO")) {
           const header = rows[0].map(h => String(h || '').trim());
-          const colunasValidas = [];
-
-          header.forEach((h, colIdx) => {
-            if (colIdx > 0 && h && !h.toUpperCase().includes("TOTAL")) {
-              colunasValidas.push({ colIndex: colIdx, nomeMes: h });
+          
+          // Mapear cada coluna de mês
+          header.forEach((nomeMes, colIdx) => {
+            if (colIdx > 0 && nomeMes && !nomeMes.toUpperCase().includes("RANKING")) {
+              const modelosDoMes = [];
+              for (let i = 1; i < rows.length; i++) {
+                const combo = parseComboCell(rows[i][colIdx]);
+                if (combo) modelosDoMes.push(combo);
+              }
+              parsedData.modelosPorMes[nomeMes] = modelosDoMes;
             }
           });
-
-          for (let i = 1; i < rows.length; i++) {
-            const modelo = String(rows[i][0] || '').trim();
-            if (!modelo || modelo.toUpperCase().includes("TOTAL")) continue;
-
-            const mesesValores = {};
-            colunasValidas.forEach(c => {
-              mesesValores[c.nomeMes] = parseNumber(rows[i][c.colIndex]);
-            });
-
-            parsedData.modelos.push({ modelo: modelo, meses: mesesValores });
-          }
-        }
-
-        // ABA SINTOMAS
-        else if (name.includes("SINTOMA")) {
-          const header = rows[0].map(h => String(h || '').trim());
-          const colunasValidas = [];
-
-          header.forEach((h, colIdx) => {
-            if (colIdx > 0 && h && !h.toUpperCase().includes("TOTAL")) {
-              colunasValidas.push({ colIndex: colIdx, nomeMes: h });
-            }
-          });
-
-          for (let i = 1; i < rows.length; i++) {
-            const sintoma = String(rows[i][0] || '').trim();
-            if (!sintoma || sintoma.toUpperCase().includes("TOTAL")) continue;
-
-            const mesesValores = {};
-            colunasValidas.forEach(c => {
-              mesesValores[c.nomeMes] = parseNumber(rows[i][c.colIndex]);
-            });
-
-            parsedData.sintomas.push({ sintoma: sintoma, meses: mesesValores });
-          }
         }
 
         // ABA DESLIGAMENTOS
@@ -1192,19 +1186,23 @@
       });
     }
 
-    /* ---------------- ABA 3: MODELOS (NOVO DESIGNIG ESTILO REFERÊNCIA) ---------------- */
+    /* ---------------- ABA 3: MODELOS (EXTRAÇÃO DA NOVA ESTRUTURA) ---------------- */
     function renderModelos() {
       const container = document.getElementById('modelos-container');
       container.innerHTML = '';
 
-      // 1. SE "TODOS OS PERÍODOS" TIVER SELECIONADO -> MOSTRA ACUMULADO + TODOS OS MESES
       if (periodoSelecionado === 'TODOS') {
-        
-        // --- CARD 1: TOTAL ACUMULADO ---
-        const modelosAcumulados = parsedData.modelos.map(m => {
-          const sum = Object.values(m.meses).reduce((a,c)=>a+c, 0);
-          return { modelo: m.modelo, valor: sum };
-        }).sort((a,b)=>b.valor-a.valor);
+        // --- 1. GRÁFICO TOTAL ACUMULADO ---
+        const acumuladoMap = {};
+        Object.keys(parsedData.modelosPorMes).forEach(mes => {
+          parsedData.modelosPorMes[mes].forEach(item => {
+            acumuladoMap[item.nome] = (acumuladoMap[item.nome] || 0) + item.valor;
+          });
+        });
+
+        const sortedAcumulado = Object.entries(acumuladoMap)
+          .map(([nome, valor]) => ({ nome, valor }))
+          .sort((a,b) => b.valor - a.valor);
 
         container.innerHTML += `
           <div class="card col-12">
@@ -1217,16 +1215,12 @@
           </div>
         `;
 
-        // Renderizar Gráfico Acumulado
         setTimeout(() => {
-          const labels = modelosAcumulados.map(m => m.modelo);
-          const values = modelosAcumulados.map(m => m.valor);
-          
           createChart('chartModelosAcumulado', {
             type: 'bar',
             data: {
-              labels: labels,
-              datasets: [{ data: values, backgroundColor: palette, borderRadius: 20 }]
+              labels: sortedAcumulado.map(s => s.nome),
+              datasets: [{ data: sortedAcumulado.map(s => s.valor), backgroundColor: palette, borderRadius: 20 }]
             },
             options: {
               plugins: {
@@ -1240,8 +1234,8 @@
           });
         }, 50);
 
-        // --- CARDS INDIVIDUAIS MÊS A MÊS ---
-        parsedData.listaMeses.forEach((mes, idx) => {
+        // --- 2. GRÁFICOS MÊS A MÊS ---
+        Object.keys(parsedData.modelosPorMes).forEach((mes, idx) => {
           const chartId = `chartModeloMes_${idx}`;
           container.innerHTML += `
             <div class="card col-12">
@@ -1255,27 +1249,18 @@
           `;
 
           setTimeout(() => {
-            const topMes = parsedData.modelos.map(m => ({
-              modelo: m.modelo,
-              valor: m.meses[mes] || 0
-            })).sort((a,b)=>b.valor-a.valor).slice(0, 5);
-
-            const totalMesSum = topMes.reduce((a,c)=>a+c.valor, 0);
-
+            const listMes = parsedData.modelosPorMes[mes] || [];
             createChart(chartId, {
               type: 'bar',
               data: {
-                labels: topMes.map(m => m.modelo),
-                datasets: [{ data: topMes.map(m => m.valor), backgroundColor: palette, borderRadius: 20 }]
+                labels: listMes.map(l => l.nome),
+                datasets: [{ data: listMes.map(l => l.valor), backgroundColor: palette, borderRadius: 20 }]
               },
               options: {
                 plugins: {
                   datalabels: {
                     anchor: 'end', align: 'end',
-                    formatter: (v) => {
-                      const p = totalMesSum ? Math.round((v / totalMesSum) * 100) : 0;
-                      return `${v}\n(${p}%)`;
-                    },
+                    formatter: (v, ctx) => `${v}\n(${listMes[ctx.dataIndex].perc}%)`,
                     color: 'var(--text-main)', font: { weight: 'bold', size: 11 }, textAlign: 'center'
                   }
                 }
@@ -1285,7 +1270,7 @@
         });
 
       } else {
-        // 2. SE APENAS 1 MÊS FOR SELECIONADO -> MOSTRA APENAS O TOP DO MÊS
+        // --- APENAS O MÊS SELECIONADO ---
         const chartId = `chartModeloMes_Unico`;
         container.innerHTML = `
           <div class="card col-12">
@@ -1299,27 +1284,18 @@
         `;
 
         setTimeout(() => {
-          const topMes = parsedData.modelos.map(m => ({
-            modelo: m.modelo,
-            valor: m.meses[periodoSelecionado] || 0
-          })).sort((a,b)=>b.valor-a.valor).slice(0, 5);
-
-          const totalMesSum = topMes.reduce((a,c)=>a+c.valor, 0);
-
+          const listMes = parsedData.modelosPorMes[periodoSelecionado] || [];
           createChart(chartId, {
             type: 'bar',
             data: {
-              labels: topMes.map(m => m.modelo),
-              datasets: [{ data: topMes.map(m => m.valor), backgroundColor: palette, borderRadius: 20 }]
+              labels: listMes.map(l => l.nome),
+              datasets: [{ data: listMes.map(l => l.valor), backgroundColor: palette, borderRadius: 20 }]
             },
             options: {
               plugins: {
                 datalabels: {
                   anchor: 'end', align: 'end',
-                  formatter: (v) => {
-                    const p = totalMesSum ? Math.round((v / totalMesSum) * 100) : 0;
-                    return `${v} (${p}%)`;
-                  },
+                  formatter: (v, ctx) => `${v} (${listMes[ctx.dataIndex].perc}%)`,
                   color: 'var(--text-main)', font: { weight: 'bold', size: 12 }
                 }
               }
