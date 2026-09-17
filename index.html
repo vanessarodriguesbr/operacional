@@ -690,7 +690,7 @@
           <div id="modelos-container" class="dashboard-grid"></div>
         </section>
 
-        <!-- ABA 4: SINTOMAS (CORRIGIDO PARA O CONTAINER DINÂMICO) -->
+        <!-- ABA 4: SINTOMAS (CONTAINER DINÂMICO CORRETO) -->
         <section id="tab-sintomas" class="tab-content">
           <div id="sintomas-container" class="dashboard-grid"></div>
         </section>
@@ -1196,10 +1196,10 @@
     /* ---------------- ABA 3: MODELOS ---------------- */
     function renderModelos() {
       const container = document.getElementById('modelos-container');
+      if (!container) return;
       container.innerHTML = '';
 
       if (periodoSelecionado === 'TODOS') {
-        // --- 1. GRÁFICO TOTAL ACUMULADO ---
         const acumuladoMap = {};
         Object.keys(parsedData.modelosPorMes).forEach(mes => {
           parsedData.modelosPorMes[mes].forEach(item => {
@@ -1241,7 +1241,6 @@
           });
         }, 50);
 
-        // --- 2. GRÁFICOS MÊS A MÊS ---
         Object.keys(parsedData.modelosPorMes).forEach((mes, idx) => {
           const chartId = `chartModeloMes_${idx}`;
           container.innerHTML += `
@@ -1277,7 +1276,6 @@
         });
 
       } else {
-        // --- APENAS O MÊS SELECIONADO ---
         const chartId = `chartModeloMes_Unico`;
         container.innerHTML = `
           <div class="card col-12">
@@ -1312,14 +1310,13 @@
       }
     }
 
-    /* ---------------- ABA 4: SINTOMAS (COMPLETAMENTE CORRIGIDO) ---------------- */
+    /* ---------------- ABA 4: SINTOMAS (COMPLETAMENTE RENDERIZADO) ---------------- */
     function renderSintomas() {
       const container = document.getElementById('sintomas-container');
       if (!container) return;
       container.innerHTML = '';
 
       if (periodoSelecionado === 'TODOS') {
-        // --- 1. GRÁFICO TOTAL ACUMULADO SINTOMAS ---
         const acumuladoMap = {};
         Object.keys(parsedData.sintomasPorMes).forEach(mes => {
           parsedData.sintomasPorMes[mes].forEach(item => {
@@ -1361,7 +1358,6 @@
           });
         }, 50);
 
-        // --- 2. GRÁFICOS MÊS A MÊS SINTOMAS ---
         Object.keys(parsedData.sintomasPorMes).forEach((mes, idx) => {
           const chartId = `chartSintomaMes_${idx}`;
           container.innerHTML += `
@@ -1397,7 +1393,6 @@
         });
 
       } else {
-        // --- APENAS O MÊS SELECIONADO ---
         const chartId = `chartSintomaMes_Unico`;
         container.innerHTML = `
           <div class="card col-12">
