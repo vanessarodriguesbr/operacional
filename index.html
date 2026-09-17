@@ -690,7 +690,7 @@
           <div id="modelos-container" class="dashboard-grid"></div>
         </section>
 
-        <!-- ABA 4: SINTOMAS (CONTAINER DINÂMICO CORRETO) -->
+        <!-- ABA 4: SINTOMAS -->
         <section id="tab-sintomas" class="tab-content">
           <div id="sintomas-container" class="dashboard-grid"></div>
         </section>
@@ -784,8 +784,8 @@
 
     let parsedData = {
       chamados: [],
-      modelosPorMes: {},  // { "JANEIRO": [{ nome, valor, perc }], ... }
-      sintomasPorMes: {}, // { "JANEIRO": [{ nome, valor, perc }], ... }
+      modelosPorMes: {},  
+      sintomasPorMes: {}, 
       desligamentos: [],
       trocas: [],
       custos: [],
@@ -838,14 +838,12 @@
       return Math.round(n);
     }
 
-    // EXTRAI NOME, VALOR E PORCENTAGEM DE CÉLULAS COMBO (Ex: "Pneus - 47 (26%)" ou "S9 - 41 (22%)")
     function parseComboCell(cellValue) {
       if (!cellValue) return null;
       const str = String(cellValue).trim();
       const upper = str.toUpperCase();
       if (!str || upper.includes("TOP 5") || upper.includes("POSIÇÃO") || upper.includes("RANKING")) return null;
 
-      // Regex para extração inteligente: Nome - Valor (Porcentagem%)
       const match = str.match(/^(.+?)\s*[\-\–]\s*(\d+)\s*\((.*?)\%?\)$/);
 
       if (match) {
@@ -924,7 +922,7 @@
       parsedData = { chamados: [], modelosPorMes: {}, sintomasPorMes: {}, desligamentos: [], trocas: [], custos: [], listaMeses: [] };
       const mesesValidosSet = new Set();
 
-      // 1. ABA CHAMADOS (Define os Meses Mestres)
+      // 1. ABA CHAMADOS
       workbook.SheetNames.forEach(sheetName => {
         if (sheetName.trim().toUpperCase().includes("CHAMADO")) {
           const sheet = workbook.Sheets[sheetName];
@@ -1054,11 +1052,90 @@
       updateAllDashboards();
     });
 
+    // FUNÇÃO PADRONIZADA DE CRIAÇÃO DE GRÁFICOS COM DESIGN DE BARRAS ARREDONDADAS E SEM GRADE
+    function createPillChart(canvasId, labels, dataValues, bgColors, datalabelFormatter) {
+      if (chartInstances[canvasId]) {
+        chartInstances[canvasId].destroy();
+      }
+
+      const el = document.getElementById(canvasId);
+      if (!el) return;
+      const ctx = el.getContext('2d');
+
+      const isDark = document.body.classList.contains('dark-mode');
+      const trackColor = isDark ? '#2d2d38' : '#f0f2f7';
+      const textColor = isDark ? '#f5f5f7' : '#2b2c34';
+
+      const maxVal = Math.max(...dataValues, 1);
+      const trackData = dataValues.map(() => maxVal);
+
+      chartInstances[canvasId] = new Chart(ctx, {
+        type: 'bar',
+        data: {
+          labels: labels,
+          datasets: [
+            // Dataset do Trilho (Barra de Fundo Cinza)
+            {
+              data: trackData,
+              backgroundColor: trackColor,
+              borderRadius: 20,
+              borderSkipped: false,
+              barThickness: 20,
+              grouped: false,
+              order: 2,
+              datalabels: { display: false }
+            },
+            // Dataset Principal (Barra Colorida Arredondada)
+            {
+              data: dataValues,
+              backgroundColor: bgColors,
+              borderRadius: 20,
+              borderSkipped: false,
+              barThickness: 20,
+              grouped: false,
+              order: 1,
+              datalabels: {
+                anchor: 'end',
+                align: 'end',
+                formatter: datalabelFormatter,
+                color: textColor,
+                font: { weight: 'bold', size: 11 },
+                textAlign: 'left'
+              }
+            }
+          ]
+        },
+        options: {
+          indexAxis: 'y',
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: { display: false },
+            tooltip: { enabled: true }
+          },
+          scales: {
+            x: {
+              display: false,
+              grid: { display: false },
+              max: maxVal * 1.18 // Dá margem para os textos à direita
+            },
+            y: {
+              grid: { display: false },
+              border: { display: false },
+              ticks: {
+                color: textColor,
+                font: { weight: '600', size: 12 }
+              }
+            }
+          }
+        }
+      });
+    }
+
     function createChart(canvasId, config) {
       if (chartInstances[canvasId]) {
         chartInstances[canvasId].destroy();
       }
-      
       if (!config.options) config.options = {};
       config.options.responsive = true;
       config.options.maintainAspectRatio = false;
@@ -1101,20 +1178,8 @@
         return item ? item.percAtendidosSla : 0;
       });
 
-      createChart('chartVGChamados', {
-        type: 'bar',
-        data: { labels: meses, datasets: [{ data: totalChamadosMes, backgroundColor: colors.purpleDark }] },
-        options: { plugins: { datalabels: { color: '#fff', font: { weight: 'bold' } } } }
-      });
-
-      createChart('chartVGSla', {
-        type: 'bar',
-        data: { labels: meses, datasets: [{ data: slaMes, backgroundColor: colors.purpleMedium }] },
-        options: {
-          plugins: { datalabels: { formatter: (v) => v + '%', color: '#fff', font: { weight: 'bold' } } },
-          scales: { x: { max: 100 } }
-        }
-      });
+      createPillChart('chartVGChamados', meses, totalChamadosMes, colors.purpleDark, (v) => v);
+      createPillChart('chartVGSla', meses, slaMes, colors.purpleMedium, (v) => `${v}%`);
 
       // Mini Gráficos de Custos
       const fat = meses.map(m => (parsedData.custos.find(c=>c.mes===m)||{}).faturamento||0);
@@ -1122,12 +1187,12 @@
       const transp = meses.map(m => (parsedData.custos.find(c=>c.mes===m)||{}).transpReal||0);
       const at = meses.map(m => (parsedData.custos.find(c=>c.mes===m)||{}).gastoAts||0);
 
-      const miniOpts = { plugins: { datalabels: { display: false } }, scales: { x: { display: false } } };
+      const miniOpts = { plugins: { datalabels: { display: false } }, scales: { x: { display: false }, y: { display: false } } };
 
-      createChart('chartVGFat', { type: 'bar', data: { labels: meses, datasets: [{ data: fat, backgroundColor: '#2e7d32' }] }, options: miniOpts });
-      createChart('chartVGDesc', { type: 'bar', data: { labels: meses, datasets: [{ data: desc, backgroundColor: '#c62828' }] }, options: miniOpts });
-      createChart('chartVGTransp', { type: 'bar', data: { labels: meses, datasets: [{ data: transp, backgroundColor: '#ef6c00' }] }, options: miniOpts });
-      createChart('chartVGAt', { type: 'bar', data: { labels: meses, datasets: [{ data: at, backgroundColor: '#1565c0' }] }, options: miniOpts });
+      createChart('chartVGFat', { type: 'bar', data: { labels: meses, datasets: [{ data: fat, backgroundColor: '#2e7d32', borderRadius: 10 }] }, options: miniOpts });
+      createChart('chartVGDesc', { type: 'bar', data: { labels: meses, datasets: [{ data: desc, backgroundColor: '#c62828', borderRadius: 10 }] }, options: miniOpts });
+      createChart('chartVGTransp', { type: 'bar', data: { labels: meses, datasets: [{ data: transp, backgroundColor: '#ef6c00', borderRadius: 10 }] }, options: miniOpts });
+      createChart('chartVGAt', { type: 'bar', data: { labels: meses, datasets: [{ data: at, backgroundColor: '#1565c0', borderRadius: 10 }] }, options: miniOpts });
 
       document.getElementById('list-melhorou').innerHTML = `
         <li class="performance-item"><span class="badge badge-success"><i class="fa-solid fa-arrow-up"></i> SLA</span> Cumprimento do SLA mantido em alto desempenho.</li>
@@ -1146,7 +1211,7 @@
       `;
     }
 
-    /* ---------------- ABA 2: CHAMADOS ---------------- */
+    /* ---------------- ABA 2: CHAMADOS (NOVO DESIGN ARREDONDADO) ---------------- */
     function renderChamados() {
       let chamadosSub = parsedData.chamados;
       if (periodoSelecionado !== 'TODOS') {
@@ -1160,37 +1225,9 @@
       const valSla = chamadosSub.map(c => c.atendidosSla);
       const percSlaList = chamadosSub.map(c => c.percAtendidosSla);
 
-      createChart('chartChamadosTotal', {
-        type: 'bar',
-        data: { labels: labelsMeses, datasets: [{ data: valTotal, backgroundColor: colors.purpleDark }] },
-        options: { plugins: { datalabels: { color: '#fff', font: { weight: 'bold' } } } }
-      });
-
-      createChart('chartChamadosAtendidos', {
-        type: 'bar',
-        data: { labels: labelsMeses, datasets: [{ data: valAtendidos, backgroundColor: colors.purpleMedium }] },
-        options: {
-          plugins: {
-            datalabels: {
-              formatter: (v, ctx) => `${v} (${percAtendidosList[ctx.dataIndex]}%)`,
-              color: '#fff', font: { weight: 'bold' }
-            }
-          }
-        }
-      });
-
-      createChart('chartChamadosSla', {
-        type: 'bar',
-        data: { labels: labelsMeses, datasets: [{ data: valSla, backgroundColor: colors.purplePastel }] },
-        options: {
-          plugins: {
-            datalabels: {
-              formatter: (v, ctx) => `${v} (${percSlaList[ctx.dataIndex]}%)`,
-              color: '#fff', font: { weight: 'bold' }
-            }
-          }
-        }
-      });
+      createPillChart('chartChamadosTotal', labelsMeses, valTotal, colors.purpleDark, (v) => v);
+      createPillChart('chartChamadosAtendidos', labelsMeses, valAtendidos, colors.purpleMedium, (v, ctx) => `${v} (${percAtendidosList[ctx.dataIndex]}%)`);
+      createPillChart('chartChamadosSla', labelsMeses, valSla, colors.purplePastel, (v, ctx) => `${v} (${percSlaList[ctx.dataIndex]}%)`);
     }
 
     /* ---------------- ABA 3: MODELOS ---------------- */
@@ -1223,22 +1260,14 @@
         `;
 
         setTimeout(() => {
-          createChart('chartModelosAcumulado', {
-            type: 'bar',
-            data: {
-              labels: sortedAcumulado.map(s => s.nome),
-              datasets: [{ data: sortedAcumulado.map(s => s.valor), backgroundColor: palette, borderRadius: 20 }]
-            },
-            options: {
-              plugins: {
-                datalabels: {
-                  anchor: 'end', align: 'end',
-                  formatter: (v) => v,
-                  color: 'var(--text-main)', font: { weight: 'bold', size: 12 }
-                }
-              }
-            }
-          });
+          const bgCols = sortedAcumulado.map((_, i) => palette[i % palette.length]);
+          createPillChart(
+            'chartModelosAcumulado',
+            sortedAcumulado.map(s => s.nome),
+            sortedAcumulado.map(s => s.valor),
+            bgCols,
+            (v) => v
+          );
         }, 50);
 
         Object.keys(parsedData.modelosPorMes).forEach((mes, idx) => {
@@ -1256,22 +1285,14 @@
 
           setTimeout(() => {
             const listMes = parsedData.modelosPorMes[mes] || [];
-            createChart(chartId, {
-              type: 'bar',
-              data: {
-                labels: listMes.map(l => l.nome),
-                datasets: [{ data: listMes.map(l => l.valor), backgroundColor: palette, borderRadius: 20 }]
-              },
-              options: {
-                plugins: {
-                  datalabels: {
-                    anchor: 'end', align: 'end',
-                    formatter: (v, ctx) => `${v}\n(${listMes[ctx.dataIndex].perc}%)`,
-                    color: 'var(--text-main)', font: { weight: 'bold', size: 11 }, textAlign: 'center'
-                  }
-                }
-              }
-            });
+            const bgCols = listMes.map((_, i) => palette[i % palette.length]);
+            createPillChart(
+              chartId,
+              listMes.map(l => l.nome),
+              listMes.map(l => l.valor),
+              bgCols,
+              (v, ctx) => `${v} (${listMes[ctx.dataIndex].perc}%)`
+            );
           }, 50);
         });
 
@@ -1290,27 +1311,19 @@
 
         setTimeout(() => {
           const listMes = parsedData.modelosPorMes[periodoSelecionado] || [];
-          createChart(chartId, {
-            type: 'bar',
-            data: {
-              labels: listMes.map(l => l.nome),
-              datasets: [{ data: listMes.map(l => l.valor), backgroundColor: palette, borderRadius: 20 }]
-            },
-            options: {
-              plugins: {
-                datalabels: {
-                  anchor: 'end', align: 'end',
-                  formatter: (v, ctx) => `${v} (${listMes[ctx.dataIndex].perc}%)`,
-                  color: 'var(--text-main)', font: { weight: 'bold', size: 12 }
-                }
-              }
-            }
-          });
+          const bgCols = listMes.map((_, i) => palette[i % palette.length]);
+          createPillChart(
+            chartId,
+            listMes.map(l => l.nome),
+            listMes.map(l => l.valor),
+            bgCols,
+            (v, ctx) => `${v} (${listMes[ctx.dataIndex].perc}%)`
+          );
         }, 50);
       }
     }
 
-    /* ---------------- ABA 4: SINTOMAS (COMPLETAMENTE RENDERIZADO) ---------------- */
+    /* ---------------- ABA 4: SINTOMAS ---------------- */
     function renderSintomas() {
       const container = document.getElementById('sintomas-container');
       if (!container) return;
@@ -1340,22 +1353,14 @@
         `;
 
         setTimeout(() => {
-          createChart('chartSintomasAcumulado', {
-            type: 'bar',
-            data: {
-              labels: sortedAcumulado.map(s => s.nome),
-              datasets: [{ data: sortedAcumulado.map(s => s.valor), backgroundColor: palette, borderRadius: 20 }]
-            },
-            options: {
-              plugins: {
-                datalabels: {
-                  anchor: 'end', align: 'end',
-                  formatter: (v) => v,
-                  color: 'var(--text-main)', font: { weight: 'bold', size: 12 }
-                }
-              }
-            }
-          });
+          const bgCols = sortedAcumulado.map((_, i) => palette[i % palette.length]);
+          createPillChart(
+            'chartSintomasAcumulado',
+            sortedAcumulado.map(s => s.nome),
+            sortedAcumulado.map(s => s.valor),
+            bgCols,
+            (v) => v
+          );
         }, 50);
 
         Object.keys(parsedData.sintomasPorMes).forEach((mes, idx) => {
@@ -1373,22 +1378,14 @@
 
           setTimeout(() => {
             const listMes = parsedData.sintomasPorMes[mes] || [];
-            createChart(chartId, {
-              type: 'bar',
-              data: {
-                labels: listMes.map(l => l.nome),
-                datasets: [{ data: listMes.map(l => l.valor), backgroundColor: palette, borderRadius: 20 }]
-              },
-              options: {
-                plugins: {
-                  datalabels: {
-                    anchor: 'end', align: 'end',
-                    formatter: (v, ctx) => `${v}\n(${listMes[ctx.dataIndex].perc}%)`,
-                    color: 'var(--text-main)', font: { weight: 'bold', size: 11 }, textAlign: 'center'
-                  }
-                }
-              }
-            });
+            const bgCols = listMes.map((_, i) => palette[i % palette.length]);
+            createPillChart(
+              chartId,
+              listMes.map(l => l.nome),
+              listMes.map(l => l.valor),
+              bgCols,
+              (v, ctx) => `${v} (${listMes[ctx.dataIndex].perc}%)`
+            );
           }, 50);
         });
 
@@ -1407,22 +1404,14 @@
 
         setTimeout(() => {
           const listMes = parsedData.sintomasPorMes[periodoSelecionado] || [];
-          createChart(chartId, {
-            type: 'bar',
-            data: {
-              labels: listMes.map(l => l.nome),
-              datasets: [{ data: listMes.map(l => l.valor), backgroundColor: palette, borderRadius: 20 }]
-            },
-            options: {
-              plugins: {
-                datalabels: {
-                  anchor: 'end', align: 'end',
-                  formatter: (v, ctx) => `${v} (${listMes[ctx.dataIndex].perc}%)`,
-                  color: 'var(--text-main)', font: { weight: 'bold', size: 12 }
-                }
-              }
-            }
-          });
+          const bgCols = listMes.map((_, i) => palette[i % palette.length]);
+          createPillChart(
+            chartId,
+            listMes.map(l => l.nome),
+            listMes.map(l => l.valor),
+            bgCols,
+            (v, ctx) => `${v} (${listMes[ctx.dataIndex].perc}%)`
+          );
         }, 50);
       }
     }
@@ -1437,11 +1426,7 @@
       const labels = data.map(d => d.mes);
       const values = data.map(d => d.quantidade);
 
-      createChart('chartDesligamentos', {
-        type: 'bar',
-        data: { labels: labels, datasets: [{ data: values, backgroundColor: colors.purpleDark, borderRadius: 10 }] },
-        options: { plugins: { datalabels: { color: '#fff', font: { weight: 'bold' } } } }
-      });
+      createPillChart('chartDesligamentos', labels, values, colors.purpleDark, (v) => v);
     }
 
     /* ---------------- ABA 6: TROCAS DE EQUIPAMENTOS ---------------- */
@@ -1454,11 +1439,7 @@
       const labels = data.map(d => d.mes);
       const values = data.map(d => d.quantidade);
 
-      createChart('chartTrocas', {
-        type: 'bar',
-        data: { labels: labels, datasets: [{ data: values, backgroundColor: colors.purpleMedium, borderRadius: 10 }] },
-        options: { plugins: { datalabels: { color: '#fff', font: { weight: 'bold' } } } }
-      });
+      createPillChart('chartTrocas', labels, values, colors.purpleMedium, (v) => v);
     }
 
     /* ---------------- ABA 7: CENTRO DE CUSTOS ---------------- */
@@ -1477,9 +1458,9 @@
         const transp = meses.map(m => (parsedData.custos.find(c=>c.mes===m)||{}).transpReal||0);
         const at = meses.map(m => (parsedData.custos.find(c=>c.mes===m)||{}).gastoAts||0);
 
-        createChart('chartCustosDesc', { type: 'bar', data: { labels: meses, datasets: [{ data: desc, backgroundColor: '#c62828' }] } });
-        createChart('chartCustosTransp', { type: 'bar', data: { labels: meses, datasets: [{ data: transp, backgroundColor: '#ef6c00' }] } });
-        createChart('chartCustosAt', { type: 'bar', data: { labels: meses, datasets: [{ data: at, backgroundColor: '#1565c0' }] } });
+        createPillChart('chartCustosDesc', meses, desc, '#c62828', (v) => `R$ ${v.toLocaleString()}`);
+        createPillChart('chartCustosTransp', meses, transp, '#ef6c00', (v) => `R$ ${v.toLocaleString()}`);
+        createPillChart('chartCustosAt', meses, at, '#1565c0', (v) => `R$ ${v.toLocaleString()}`);
 
         parsedData.custos.forEach(c => {
           tbody.innerHTML += `
