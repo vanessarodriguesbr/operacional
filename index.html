@@ -395,6 +395,28 @@
       min-height: 280px;
     }
 
+    /* Total Acumulado Box na aba Custos */
+    .custos-total-box {
+      margin-top: 15px;
+      padding-top: 12px;
+      border-top: 1px solid var(--border-color);
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+
+    .custos-total-label {
+      font-size: 0.75rem;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      font-weight: 600;
+    }
+
+    .custos-total-val {
+      font-size: 1.25rem;
+      font-weight: 800;
+    }
+
     /* Empty State */
     .empty-state {
       display: flex;
@@ -715,7 +737,7 @@
           </div>
         </section>
 
-        <!-- ABA 7: CENTRO DE CUSTOS -->
+        <!-- ABA 7: CENTRO DE CUSTOS (NOVO DESIGNIG EXPANDIDO TIPO REFERÊNCIA) -->
         <section id="tab-custos" class="tab-content">
           <div class="dashboard-grid" id="custos-kpis" style="display:none;">
             <div class="col-3"><div class="kpi-card"><span class="kpi-title">Faturamento</span><span class="kpi-value" id="kpi-fat">R$ 0</span></div></div>
@@ -725,37 +747,50 @@
           </div>
 
           <div class="dashboard-grid" id="custos-charts-container">
-            <div class="card col-4">
-              <div class="card-title">Descontos</div>
-              <div class="chart-container"><canvas id="chartCustosDesc"></canvas></div>
+            <!-- CARDS DE CUSTOS EXPANDIDOS EM LARGURA TOTAL -->
+            <div class="card col-12">
+              <div class="card-title" style="color: #ef4444;"><i class="fa-solid fa-tags"></i> DESCONTOS (Valores por mês)</div>
+              <div class="chart-container" style="min-height: 260px;"><canvas id="chartCustosDesc"></canvas></div>
+              <div class="custos-total-box">
+                <span class="custos-total-label">total acumulado</span>
+                <span class="custos-total-val" id="total-acumulado-desc" style="color: #ef4444;">R$ 0,00</span>
+              </div>
             </div>
-            <div class="card col-4">
-              <div class="card-title">Gastos Transportadora Real</div>
-              <div class="chart-container"><canvas id="chartCustosTransp"></canvas></div>
+
+            <div class="card col-12">
+              <div class="card-title" style="color: #f97316;"><i class="fa-solid fa-truck"></i> GASTOS TRANSPORTADORA (Valores por mês)</div>
+              <div class="chart-container" style="min-height: 260px;"><canvas id="chartCustosTransp"></canvas></div>
+              <div class="custos-total-box">
+                <span class="custos-total-label">total acumulado</span>
+                <span class="custos-total-val" id="total-acumulado-transp" style="color: #f97316;">R$ 0,00</span>
+              </div>
             </div>
-            <div class="card col-4">
-              <div class="card-title">Gastos ATs</div>
-              <div class="chart-container"><canvas id="chartCustosAt"></canvas></div>
+
+            <div class="card col-12">
+              <div class="card-title" style="color: #8b5cf6;"><i class="fa-solid fa-wrench"></i> GASTOS COM AT (Valores por mês)</div>
+              <div class="chart-container" style="min-height: 260px;"><canvas id="chartCustosAt"></canvas></div>
+              <div class="custos-total-box">
+                <span class="custos-total-label">total acumulado</span>
+                <span class="custos-total-val" id="total-acumulado-at" style="color: #8b5cf6;">R$ 0,00</span>
+              </div>
             </div>
           </div>
 
           <div class="dashboard-grid">
             <div class="card col-12">
-              <div class="card-title">Tabela de Custos Operacionais</div>
+              <div class="card-title" style="font-size:0.85rem; letter-spacing:0.5px; text-transform:uppercase;">
+                COMPARATIVO DETALHADO POR MÊS
+              </div>
               <div class="table-responsive">
                 <table class="custom-table">
                   <thead>
                     <tr>
-                      <th>Mês</th>
-                      <th>Chamados</th>
-                      <th>Faturamento</th>
-                      <th>Desconto</th>
-                      <th>% Desc.</th>
-                      <th>Transp. Bruto</th>
-                      <th>Reembolso Transp.</th>
-                      <th>Transp. Real</th>
-                      <th>Gasto ATs</th>
-                      <th>% Gasto ATs</th>
+                      <th>MÊS</th>
+                      <th>FATURAMENTO</th>
+                      <th>DESCONTOS</th>
+                      <th>TRANSPORTADORA</th>
+                      <th>ATs</th>
+                      <th>TOTAL CUSTOS</th>
                     </tr>
                   </thead>
                   <tbody id="custos-table-body"></tbody>
@@ -836,6 +871,10 @@
         return Math.round(n * 100);
       }
       return Math.round(n);
+    }
+
+    function formatBRL(val) {
+      return (val || 0).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
     }
 
     function parseComboCell(cellValue) {
@@ -1052,7 +1091,7 @@
       updateAllDashboards();
     });
 
-    // FUNÇÃO PADRONIZADA DE CRIAÇÃO DE GRÁFICOS COM DESIGN DE BARRAS ARREDONDADAS E SEM GRADE
+    // FUNÇÃO PADRONIZADA DE CRIAÇÃO DE GRÁFICOS COM DESIGN DE BARRAS ARREDONDADAS
     function createPillChart(canvasId, labels, dataValues, bgColors, datalabelFormatter) {
       if (chartInstances[canvasId]) {
         chartInstances[canvasId].destroy();
@@ -1074,7 +1113,6 @@
         data: {
           labels: labels,
           datasets: [
-            // Dataset do Trilho (Barra de Fundo Cinza)
             {
               data: trackData,
               backgroundColor: trackColor,
@@ -1085,7 +1123,6 @@
               order: 2,
               datalabels: { display: false }
             },
-            // Dataset Principal (Barra Colorida Arredondada)
             {
               data: dataValues,
               backgroundColor: bgColors,
@@ -1117,7 +1154,7 @@
             x: {
               display: false,
               grid: { display: false },
-              max: maxVal * 1.18 // Dá margem para os textos à direita
+              max: maxVal * 1.2
             },
             y: {
               grid: { display: false },
@@ -1211,7 +1248,7 @@
       `;
     }
 
-    /* ---------------- ABA 2: CHAMADOS (NOVO DESIGN ARREDONDADO) ---------------- */
+    /* ---------------- ABA 2: CHAMADOS ---------------- */
     function renderChamados() {
       let chamadosSub = parsedData.chamados;
       if (periodoSelecionado !== 'TODOS') {
@@ -1442,7 +1479,7 @@
       createPillChart('chartTrocas', labels, values, colors.purpleMedium, (v) => v);
     }
 
-    /* ---------------- ABA 7: CENTRO DE CUSTOS ---------------- */
+    /* ---------------- ABA 7: CENTRO DE CUSTOS (FORMATO EXPANDIDO CONFORME REFERÊNCIA) ---------------- */
     function renderCustos() {
       const kpisContainer = document.getElementById('custos-kpis');
       const chartsContainer = document.getElementById('custos-charts-container');
@@ -1451,30 +1488,38 @@
 
       if (periodoSelecionado === 'TODOS') {
         kpisContainer.style.display = 'none';
-        chartsContainer.style.display = 'flex';
+        chartsContainer.style.display = 'grid';
 
         const meses = parsedData.listaMeses;
         const desc = meses.map(m => (parsedData.custos.find(c=>c.mes===m)||{}).desconto||0);
         const transp = meses.map(m => (parsedData.custos.find(c=>c.mes===m)||{}).transpReal||0);
         const at = meses.map(m => (parsedData.custos.find(c=>c.mes===m)||{}).gastoAts||0);
 
-        createPillChart('chartCustosDesc', meses, desc, '#c62828', (v) => `R$ ${v.toLocaleString()}`);
-        createPillChart('chartCustosTransp', meses, transp, '#ef6c00', (v) => `R$ ${v.toLocaleString()}`);
-        createPillChart('chartCustosAt', meses, at, '#1565c0', (v) => `R$ ${v.toLocaleString()}`);
+        // Renderização dos 3 Gráficos no modelo Pill Chart
+        createPillChart('chartCustosDesc', meses, desc, '#ef4444', (v) => formatBRL(v));
+        createPillChart('chartCustosTransp', meses, transp, '#f97316', (v) => formatBRL(v));
+        createPillChart('chartCustosAt', meses, at, '#8b5cf6', (v) => formatBRL(v));
 
+        // Cálculo dos Totais Acumulados
+        const sumDesc = desc.reduce((a,c)=>a+c, 0);
+        const sumTransp = transp.reduce((a,c)=>a+c, 0);
+        const sumAt = at.reduce((a,c)=>a+c, 0);
+
+        document.getElementById('total-acumulado-desc').innerText = formatBRL(sumDesc);
+        document.getElementById('total-acumulado-transp').innerText = formatBRL(sumTransp);
+        document.getElementById('total-acumulado-at').innerText = formatBRL(sumAt);
+
+        // Preenchimento da Tabela Comparativa Detalhada
         parsedData.custos.forEach(c => {
+          const totalCustosMes = c.desconto + c.transpReal + c.gastoAts;
           tbody.innerHTML += `
             <tr>
               <td><strong>${c.mes}</strong></td>
-              <td>${c.chamados}</td>
-              <td>R$ ${c.faturamento.toLocaleString()}</td>
-              <td>R$ ${c.desconto.toLocaleString()}</td>
-              <td>${c.percDesconto}%</td>
-              <td>R$ ${c.transpBruto.toLocaleString()}</td>
-              <td>R$ ${c.reembolsoTransp.toLocaleString()}</td>
-              <td>R$ ${c.transpReal.toLocaleString()}</td>
-              <td>R$ ${c.gastoAts.toLocaleString()}</td>
-              <td>${c.percGastoAts}%</td>
+              <td>${formatBRL(c.faturamento)}</td>
+              <td style="color: #ef4444; font-weight: 600;">${formatBRL(c.desconto)}</td>
+              <td style="color: #f97316; font-weight: 600;">${formatBRL(c.transpReal)}</td>
+              <td style="color: #8b5cf6; font-weight: 600;">${formatBRL(c.gastoAts)}</td>
+              <td style="font-weight: 700;">${formatBRL(totalCustosMes)}</td>
             </tr>
           `;
         });
@@ -1485,24 +1530,21 @@
 
         const item = parsedData.custos.find(c => c.mes === periodoSelecionado) || {};
         
-        document.getElementById('kpi-fat').innerText = `R$ ${(item.faturamento||0).toLocaleString()}`;
-        document.getElementById('kpi-desc').innerText = `R$ ${(item.desconto||0).toLocaleString()}`;
-        document.getElementById('kpi-transp').innerText = `R$ ${(item.transpReal||0).toLocaleString()}`;
-        document.getElementById('kpi-at').innerText = `R$ ${(item.gastoAts||0).toLocaleString()}`;
+        document.getElementById('kpi-fat').innerText = formatBRL(item.faturamento||0);
+        document.getElementById('kpi-desc').innerText = formatBRL(item.desconto||0);
+        document.getElementById('kpi-transp').innerText = formatBRL(item.transpReal||0);
+        document.getElementById('kpi-at').innerText = formatBRL(item.gastoAts||0);
 
         if (item.mes) {
+          const totalCustosMes = (item.desconto||0) + (item.transpReal||0) + (item.gastoAts||0);
           tbody.innerHTML = `
             <tr>
               <td><strong>${item.mes}</strong></td>
-              <td>${item.chamados}</td>
-              <td>R$ ${item.faturamento.toLocaleString()}</td>
-              <td>R$ ${item.desconto.toLocaleString()}</td>
-              <td>${item.percDesconto}%</td>
-              <td>R$ ${item.transpBruto.toLocaleString()}</td>
-              <td>R$ ${item.reembolsoTransp.toLocaleString()}</td>
-              <td>R$ ${item.transpReal.toLocaleString()}</td>
-              <td>R$ ${item.gastoAts.toLocaleString()}</td>
-              <td>${item.percGastoAts}%</td>
+              <td>${formatBRL(item.faturamento)}</td>
+              <td style="color: #ef4444; font-weight: 600;">${formatBRL(item.desconto)}</td>
+              <td style="color: #f97316; font-weight: 600;">${formatBRL(item.transpReal)}</td>
+              <td style="color: #8b5cf6; font-weight: 600;">${formatBRL(item.gastoAts)}</td>
+              <td style="font-weight: 700;">${formatBRL(totalCustosMes)}</td>
             </tr>
           `;
         }
